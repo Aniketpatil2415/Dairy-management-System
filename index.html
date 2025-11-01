@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doodh Dairy Management</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7f6;
+        }
+        /* Page transition smoothness */
+        [data-page] {
+            display: none;
+        }
+        [data-page].active {
+            display: block;
+        }
+        /* Simple modal style */
+        .modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            transition: opacity 0.3s ease;
+        }
+        .modal-content {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 50;
+            transition: all 0.3s ease;
+            max-height: 90vh;
+        }
+        .modal-backdrop.active, .modal-content.active {
+            display: block;
+        }
+        /* For Gemini summary text */
+        .prose {
+            white-space: pre-wrap;
+        }
+        /* Language button styling */
+        .lang-btn {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .lang-btn.active {
+            background-color: #3b82f6; /* bg-blue-600 */
+            color: white;
+        }
+        .lang-btn:not(.active) {
+            background-color: #e5e7eb; /* bg-gray-200 */
+            color: #374151; /* text-gray-700 */
+        }
+        
+        /* History Modal Tab styling */
+        .tab-btn {
+            padding: 8px 16px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            color: #6b7280; /* text-gray-500 */
+        }
+        .tab-btn.active {
+            color: #3b82f6; /* text-blue-600 */
+            border-bottom-color: #3b82f6;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Chart filter button styling */
+        .fat-filter-btn {
+            transition: all 0.2s;
+        }
+        .fat-filter-btn.active {
+            background-color: #3b82f6; /* bg-blue-600 */
+            color: white;
+        }
+        .fat-filter-btn:not(.active) {
+            background-color: #e5e7eb; /* bg-gray-200 */
+            color: #374151; /* text-gray-700 */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- ===== LOGIN VIEW ===== -->
+    <div id="login-view" class="flex items-center justify-center min-h-screen bg-gray-100">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
+            <h2 class="text-3xl font-bold text-center text-gray-800" data-lang-key="adminLogin">Admin Login</h2>
+            <p class="text-center text-gray-600" data-lang-key="dairyManagementSystem">Dairy Management System</p>
+            
+            <!-- Login Form -->
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label for="login-email" class="text-sm font-medium text-gray-700" data-lang-key="email">Email</label>
+                    <input type="email" id="login-email" required class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" data-lang-placeholder="emailPlaceholder" placeholder="admin@email.com">
+                </div>
+                <div>
+                    <label for="login-password" class="text-sm font-medium text-gray-700" data-lang-key="password">Password</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" data-lang-placeholder="passwordPlaceholder" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors" data-lang-key="login">Login</button>
+            </form>
+            
+            <div class="text-center">
+                <span class="text-sm text-gray-500" data-lang-key="newUser">Naye admin? </span>
+                <button id="show-signup-btn" class="text-sm font-medium text-blue-600 hover:underline" data-lang-key="signupHere">Signup Yahan Karein</button>
+            </div>
+
+            <!-- Signup Form (Hidden initially) -->
+            <form id="signup-form" class="hidden space-y-4">
+                <h3 class="text-xl font-semibold text-center text-gray-700" data-lang-key="newAdminAccount">Naya Admin Account</h3>
+                <div>
+                    <label for="signup-email" class="text-sm font-medium text-gray-700" data-lang-key="email">Email</label>
+                    <input type="email" id="signup-email" required class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label for="signup-password" class="text-sm font-medium text-gray-700" data-lang-key="password">Password</label>
+                    <input type="password" id="signup-password" required class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+                <button type="submit" class="w-full py-2 font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors" data-lang-key="signup">Signup</button>
+                 <button type="button" id="show-login-btn" class="w-full text-sm font-medium text-blue-600 hover:underline" data-lang-key="backToLogin">Wapas Login pe Jayein</button>
+            </form>
+
+            <p id="auth-error" class="text-center text-red-500 text-sm"></p>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN APP VIEW ===== -->
+    <div id="admin-view" class="hidden">
+        <!-- Sidebar Overlay (Mobile) -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden hidden"></div>
+
+        <div class="flex min-h-screen bg-gray-100">
+            <!-- Sidebar Navigation -->
+            <nav id="sidebar" class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 bg-white shadow-lg transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+                <div class="flex items-center justify-center p-6 border-b">
+                    <i class="fas fa-mug-hot text-3xl text-blue-600"></i>
+                    <span class="ml-3 text-2xl font-bold text-gray-800" data-lang-key="dairyAdmin">Dairy Admin</span>
+                </div>
+                <div class="flex-1 overflow-y-auto">
+                    <ul class="py-4">
+                        <!-- Navigation Links -->
+                        <li class="px-6 py-3">
+                            <a href="#dashboard" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors">
+                                <i class="fas fa-tachometer-alt w-6 text-center"></i>
+                                <span class="ml-3 font-medium" data-lang-key="dashboard">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="px-6 py-3">
+                            <a href="#customers" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors">
+                                <i class="fas fa-users w-6 text-center"></i>
+                                <span class="ml-3 font-medium" data-lang-key="customers">Grahak (Customers)</span>
+                            </a>
+                        </li>
+                        <li class="px-6 py-3">
+                            <a href="#daily-log" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors">
+                                <i class="fas fa-clipboard-list w-6 text-center"></i>
+                                <span class="ml-3 font-medium" data-lang-key="dailyLog">Roz ka Hisaab</span>
+                            </a>
+                        </li>
+                        <!-- New Fat Log Link -->
+                        <li class="px-6 py-3">
+                            <a href="#fat-log" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors">
+                                <i class="fas fa-percentage w-6 text-center"></i>
+                                <span class="ml-3 font-medium" data-lang-key="fatLog">Fat Log</span>
+                            </a>
+                        </li>
+                        <li class="px-6 py-3">
+                            <a href="#expenses" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors">
+                                <i class="fas fa-money-bill-wave w-6 text-center"></i>
+                                <span class="ml-3 font-medium" data-lang-key="expenses">Kharche (Expenses)</span>
+                            </a>
+                        </li>
+                        <li class="px-6 py-3">
+                            <a href="#settings" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors">
+                                <i class="fas fa-cog w-6 text-center"></i>
+                                <span class="ml-3 font-medium" data-lang-key="settings">Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Language Switcher -->
+                <div class="p-4 border-t">
+                    <div class="flex justify-around mb-3">
+                        <button class="lang-btn" data-lang="en">English</button>
+                        <button class="lang-btn" data-lang="mr">मराठी</button>
+                    </div>
+                    <button id="logout-btn" class="w-full flex items-center justify-center py-2 px-4 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 transition-colors">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        <span data-lang-key="logout">Logout</span>
+                    </button>
+                    <p class="text-xs text-gray-500 mt-2 truncate"><span data-lang-key="adminId">Admin ID</span>: <span id="admin-user-id"></span></p>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <div class="flex-1 flex flex-col md:ml-64">
+                <!-- Mobile Header -->
+                <header class="sticky top-0 bg-white shadow-md p-4 md:hidden flex justify-between items-center z-10">
+                    <button id="menu-toggle-btn" class="text-2xl text-gray-700">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="text-xl font-bold text-blue-600" data-lang-key="dairyAdmin">Dairy Admin</h1>
+                    <div></div> <!-- Spacer -->
+                </header>
+
+                <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+                    
+                    <!-- ===== Dashboard Page ===== -->
+                    <div id="dashboard-page" data-page class="active">
+                        <h1 class="text-3xl font-bold text-gray-800 mb-6" data-lang-key="dashboard">Dashboard</h1>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <!-- Stat Card 1 -->
+                            <div class="p-6 bg-white rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="p-3 bg-blue-100 rounded-full">
+                                        <i class="fas fa-users text-2xl text-blue-600"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-500" data-lang-key="totalCustomers">Kul Grahak</p>
+                                        <p id="stat-total-customers" class="text-3xl font-bold text-gray-900">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Stat Card 2 -->
+                            <div class="p-6 bg-white rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="p-3 bg-red-100 rounded-full">
+                                        <i class="fas fa-wallet text-2xl text-red-600"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-500" data-lang-key="totalBalance">Total Bakaaya</p>
+                                        <p id="stat-total-balance" class="text-3xl font-bold text-gray-900">₹0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Stat Card 3 -->
+                            <div class="p-6 bg-white rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="p-3 bg-red-100 rounded-full">
+                                        <i class="fas fa-shopping-cart text-2xl text-red-600"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-500" data-lang-key="monthlyExpenses">Is Mahine ka Kharcha</p>
+                                        <p id="stat-total-expenses" class="text-3xl font-bold text-gray-900">₹0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+                             <!-- Stat Card 4 - Today's Fat -->
+                            <div class="p-6 bg-white rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="p-3 bg-yellow-100 rounded-full">
+                                        <i class="fas fa-percentage text-2xl text-yellow-600"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-500" data-lang-key="todayFat">Today's Fat</p>
+                                        <p id="stat-today-fat" class="text-3xl font-bold text-gray-900">--</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Stat Card 5 (New) - Monthly Payments Received -->
+                            <div class="p-6 bg-white rounded-lg shadow-md">
+                                <div class="flex items-center">
+                                    <div class="p-3 bg-green-100 rounded-full">
+                                        <i class="fas fa-hand-holding-dollar text-2xl text-green-600"></i>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-500" data-lang-key="monthlyPayments">Payments Received (Month)</p>
+                                        <p id="stat-total-payments" class="text-3xl font-bold text-gray-900">₹0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- New Fat Chart -->
+                        <div class="mt-8 bg-white p-4 md:p-6 rounded-lg shadow-md">
+                            <h2 class="text-xl font-semibold mb-4" data-lang-key="fatHistory">Fat History</h2>
+                            <div class="flex justify-center flex-wrap space-x-2 mb-4">
+                                <button class="fat-filter-btn px-3 py-1 text-sm rounded-md active" data-days="7">7 Days</button>
+                                <button class="fat-filter-btn px-3 py-1 text-sm rounded-md" data-days="30">30 Days</button>
+                                <button class="fat-filter-btn px-3 py-1 text-sm rounded-md" data-days="0">All Time</button>
+                            </div>
+                            <div class="h-64 md:h-80">
+                                <canvas id="fat-chart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ===== Customers Page ===== -->
+                    <div id="customers-page" data-page>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-6" data-lang-key="manageCustomers">Grahak Manage Karein</h1>
+                        
+                        <!-- Add Customer Form -->
+                        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                            <h2 class="text-xl font-semibold mb-4" data-lang-key="addNewCustomer">Naya Grahak Jodein</h2>
+                            <form id="add-customer-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <input type="text" id="customer-name" class="p-2 border rounded-md" data-lang-placeholder="customerName" placeholder="Grahak ka Naam" required>
+                                <input type="tel" id="customer-phone" class="p-2 border rounded-md" data-lang-placeholder="phoneNumber" placeholder="Phone Number">
+                                <input type="text" id="customer-address" class="p-2 border rounded-md" data-lang-placeholder="address" placeholder="Address">
+                                <input type="number" step="0.5" min="0" id="customer-qty" class="p-2 border rounded-md" data-lang-placeholder="defaultMilk" placeholder="Default Doodh (Liters)" required>
+                                
+                                <select id="customer-milk-type" class="p-2 border rounded-md bg-white">
+                                    <option value="cow" data-lang-key="cowMilk">Cow Milk</option>
+                                    <option value="buffalo" data-lang-key="buffaloMilk">Buffalo Milk</option>
+                                </select>
+                                <select id="customer-shift" class="p-2 border rounded-md bg-white">
+                                    <option value="morning" data-lang-key="morningShift">Morning Shift</option>
+                                    <option value="evening" data-lang-key="eveningShift">Evening Shift</option>
+                                </select>
+                                
+                                <button type="submit" class="md:col-span-3 w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors" data-lang-key="addCustomer">Add Grahak</button>
+                            </form>
+                        </div>
+
+                        <!-- Customer List -->
+                        <div class="bg-white rounded-lg shadow-md overflow-x-auto">
+                             <h2 class="text-xl font-semibold p-6" data-lang-key="customerList">Grahak ki List</h2>
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="name">Naam</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="milkType">Milk Type</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="shift">Shift</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="defaultQty">Default Qty</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="balanceAmount">Bakaaya Raashi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="actions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customer-list" class="bg-white divide-y divide-gray-200">
+                                    <!-- Customer rows will be injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ===== Daily Log Page ===== -->
+                    <div id="daily-log-page" data-page>
+                        <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-2">
+                            <h1 class="text-3xl font-bold text-gray-800" data-lang-key="dailyLog">Roz ka Hisaab</h1>
+                            <p class="text-lg text-gray-600"><span data-lang-key="todayDate">Aaj ki Taarikh</span>: <span id="today-date"></span></p>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-md mt-6 overflow-x-auto">
+                            <div class="p-4 border-b space-y-1">
+                                <p class="text-sm text-gray-600"><span data-lang-key="cowMilkRate">Cow Milk Rate</span>: <span id="log-cow-milk-price" class="font-bold text-blue-600">₹0/L</span></p>
+                                <p class="text-sm text-gray-600"><span data-lang-key="buffaloMilkRate">Buffalo Milk Rate</span>: <span id="log-buffalo-milk-price" class="font-bold text-blue-600">₹0/L</span></p>
+                                <p class="text-xs text-gray-500" data-lang-key="setFromSettings">Settings se set karein</p>
+                            </div>
+                            <form id="daily-log-form">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="milkDelivered">Doodh Diya?</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="customer">Grahak</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="quantityLiters">Kitna (Liters)</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="daily-log-list" class="bg-white divide-y divide-gray-200">
+                                        <!-- Daily log rows will be injected here -->
+                                    </tbody>
+                                </table>
+                                <div class="p-6 bg-gray-50 border-t">
+                                    <button type="submit" class="w-full py-3 px-6 bg-green-600 text-white font-bold rounded-md hover:bg-green-700 transition-colors text-lg">
+                                        <i class="fas fa-save mr-2"></i>
+                                        <span data-lang-key="saveTodayLog">Aaj ka Hisaab Save Karein</span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- ===== New Fat Log Page ===== -->
+                    <div id="fat-log-page" data-page>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-6" data-lang-key="manageFatLog">Manage Fat Log</h1>
+                        
+                        <!-- Add Fat Entry Form -->
+                        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                            <h2 class="text-xl font-semibold mb-4" data-lang-key="addFatEntry">Add New Fat Entry</h2>
+                            <form id="add-fat-log-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <input type="date" id="fat-date" class="p-2 border rounded-md bg-gray-100" required>
+                                <input type="number" step="0.1" min="0" id="fat-value" class="p-2 border rounded-md" data-lang-placeholder="fatValuePlaceholder" placeholder="Fat Value (e.g., 8.7)" required>
+                                <button type="submit" class="md:col-span-3 w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors" data-lang-key="addEntry">Add Entry</button>
+                            </form>
+                        </div>
+
+                        <!-- Fat Log List -->
+                        <div class="bg-white rounded-lg shadow-md overflow-x-auto">
+                            <h2 class="text-xl font-semibold p-6" data-lang-key="fatLogList">Fat Log List</h2>
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="date">Taarikh</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="fatValue">Fat Value</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="actions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="fat-log-list" class="bg-white divide-y divide-gray-200">
+                                    <!-- Fat log rows will be injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ===== Expenses Page ===== -->
+                    <div id="expenses-page" data-page>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-6" data-lang-key="manageExpenses">Kharche Manage Karein</h1>
+                        
+                        <!-- Add Expense Form -->
+                        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                            <h2 class="text-xl font-semibold mb-4" data-lang-key="addNewExpense">Naya Kharcha Jodein</h2>
+                            <form id="add-expense-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <input type="date" id="expense-date" class="p-2 border rounded-md" required>
+                                <input type="text" id="expense-desc" class="p-2 border rounded-md" data-lang-placeholder="expenseDescription" placeholder="Kharcha ka Vivaran" required>
+                                <input type="number" step="0.01" min="0" id="expense-amount" class="p-2 border rounded-md" data-lang-placeholder="amount" placeholder="Raashi (₹)" required>
+                                <button type="submit" class="md:col-span-3 w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors" data-lang-key="addExpense">Add Kharcha</button>
+                            </form>
+                        </div>
+
+                        <!-- Gemini Summary Button -->
+                        <button id="get-expense-summary-btn" class="mb-6 w-full py-2 px-4 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-magic-sparkles mr-2"></i> 
+                            <span data-lang-key="getGeminiSummary">Get Monthly Expense Summary (with Gemini)</span>
+                        </button>
+
+                        <!-- Expense List -->
+                        <div class="bg-white rounded-lg shadow-md overflow-x-auto">
+                             <h2 class="text-xl font-semibold p-6" data-lang-key="expenseList">Kharche ki List</h2>
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="date">Taarikh</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="description">Vivaran</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="amount">Raashi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="actions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="expense-list" class="bg-white divide-y divide-gray-200">
+                                    <!-- Expense rows will be injected here -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- ===== Settings Page ===== -->
+                    <div id="settings-page" data-page>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-6" data-lang-key="settings">Settings</h1>
+                        <div class="bg-white p-6 rounded-lg shadow-md max-w-lg">
+                            <h2 class="text-xl font-semibold mb-4" data-lang-key="setMilkRate">Doodh ka Rate Set Karein</h2>
+                            <form id="settings-form" class="space-y-4">
+                                <!-- Cow Milk Rate -->
+                                <div>
+                                    <label for="milk-price-cow" class="block text-sm font-medium text-gray-700" data-lang-key="cowMilkRate">Cow Milk Rate (per liter)</label>
+                                    <input type="number" step="0.01" min="0" id="milk-price-cow" class="mt-1 p-2 w-full border rounded-md" data-lang-placeholder="milkRateExample" placeholder="e.g., 50.50">
+                                </div>
+                                <!-- Buffalo Milk Rate -->
+                                <div>
+                                    <label for="milk-price-buffalo" class="block text-sm font-medium text-gray-700" data-lang-key="buffaloMilkRate">Buffalo Milk Rate (per liter)</label>
+                                    <input type="number" step="0.01" min="0" id="milk-price-buffalo" class="mt-1 p-2 w-full border rounded-md" data-lang-placeholder="milkRateExample" placeholder="e.g., 65.00">
+                                </div>
+                                <button type="submit" class="w-full py-2 px-4 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors" data-lang-key="saveSettings">
+                                    Save Settings
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                </main>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Payment Modal ===== -->
+    <div id="payment-modal-backdrop" class="modal-backdrop"></div>
+    <div id="payment-modal-content" class="modal-content bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+        <h2 class="text-xl font-semibold mb-4" data-lang-key="receivePayment">Payment Receive Karein</h2>
+        <p class="mb-2"><span data-lang-key="customer">Grahak</span>: <span id="payment-customer-name" class="font-bold"></span></p>
+        <p class="mb-4"><span data-lang-key="currentBalance">Current Bakaaya</span>: <span id="payment-customer-balance" class="font-bold"></span></p>
+        <form id="payment-form">
+            <input type="hidden" id="payment-customer-id">
+            <div>
+                <label for="payment-amount" class="block text-sm font-medium text-gray-700" data-lang-key="paymentAmount">Payment Raashi (₹)</label>
+                <input type="number" step="0.01" min="0" id="payment-amount" class="mt-1 p-2 w-full border rounded-md" required>
+            </div>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" id="cancel-payment-btn" class="py-2 px-4 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors" data-lang-key="cancel">Cancel</button>
+                <button type="submit" class="py-2 px-4 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors" data-lang-key="addPayment">Add Payment</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ===== Gemini Summary Modal ===== -->
+    <div id="summary-modal-backdrop" class="modal-backdrop"></div>
+    <div id="summary-modal-content" class="modal-content bg-white p-6 rounded-lg shadow-xl w-full max-w-lg">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold" data-lang-key="geminiSummaryTitle">Gemini Expense Summary</h2>
+            <button id="close-summary-btn" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+        </div>
+        <div id="summary-loading" class="text-center p-4">
+            <i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i>
+            <p class="mt-2 text-gray-600" data-lang-key="geminiLoading">Gemini se summary generate kar rahe hain...</p>
+        </div>
+        <div id="summary-result" class="prose max-w-none text-gray-700" style="display: none;">
+            <!-- Gemini response will be injected here -->
+        </div>
+    </div>
+    
+    <!-- ===== Customer History Modal ===== -->
+    <div id="history-modal-backdrop" class="modal-backdrop"></div>
+    <div id="history-modal-content" class="modal-content bg-white rounded-lg shadow-xl w-full max-w-3xl overflow-hidden">
+        <!-- Modal Header -->
+        <div class="flex justify-between items-center p-5 border-b">
+            <div>
+                <h2 class="text-xl font-semibold" id="history-customer-name">Customer History</h2>
+                <!-- Updated Info Section -->
+                <div id="history-customer-info" class="text-sm text-gray-600 mt-2">
+                    <!-- Details will be injected here -->
+                </div>
+            </div>
+            <button id="close-history-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+        </div>
+        
+        <!-- Modal Body -->
+        <div class="p-5 flex flex-col">
+            <!-- Tabs -->
+            <div class="border-b border-gray-200 mb-4">
+                <nav class="flex -mb-px">
+                    <button class="tab-btn active" data-tab="milk-history" data-lang-key="milkHistory">Milk History</button>
+                    <button class="tab-btn" data-tab="payment-history" data-lang-key="paymentHistory">Payment History</button>
+                </nav>
+            </div>
+            
+            <!-- Tab Content -->
+            <div class="flex-1 overflow-y-auto" style="max-height: 60vh;">
+                <!-- Milk History Tab -->
+                <div id="milk-history-content" class="tab-content active">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase" data-lang-key="date">Date</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase" data-lang-key="status">Status</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase" data-lang-key="quantity">Quantity</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase" data-lang-key="amount">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="milk-history-list" class="bg-white divide-y divide-gray-200">
+                            <!-- Milk history rows will be injected here -->
+                        </tbody>
+                    </table>
+                    <p id="no-milk-history" class="p-4 text-center text-gray-500" data-lang-key="noMilkHistory" style="display: none;"></p>
+                </div>
+                
+                <!-- Payment History Tab -->
+                <div id="payment-history-content" class="tab-content">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase" data-lang-key="date">Date</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase" data-lang-key="amount">Amount Paid</th>
+                            </tr>
+                        </thead>
+                        <tbody id="payment-history-list" class="bg-white divide-y divide-gray-200">
+                            <!-- Payment history rows will be injected here -->
+                        </tbody>
+                    </table>
+                     <p id="no-payment-history" class="p-4 text-center text-gray-500" data-lang-key="noPaymentHistory" style="display: none;"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== Custom Confirm Modal (New) ===== -->
+    <div id="confirm-modal-backdrop" class="modal-backdrop"></div>
+    <div id="confirm-modal-content" class="modal-content bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
+        <h2 id="confirm-modal-title" class="text-xl font-semibold mb-4">Confirm Action</h2>
+        <p id="confirm-modal-body" class="mb-6 text-gray-700">Are you sure?</p>
+        <div class="flex justify-end space-x-3">
+            <button type="button" id="confirm-modal-cancel" class="py-2 px-4 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors" data-lang-key="cancel">Cancel</button>
+            <button type="button" id="confirm-modal-confirm" class="py-2 px-4 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors" data-lang-key="confirm">Confirm</button>
+        </div>
+    </div>
+
+
+    <!-- Global Status Toast -->
+    <div id="toast-notification" class="hidden fixed bottom-5 right-5 bg-green-600 text-white py-3 px-5 rounded-lg shadow-xl transition-all duration-300 transform translate-y-10 opacity-0">
+        <p id="toast-message">Success!</p>
+    </div>
+
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // ===== 1. CONFIGURATION =====
+
+        // User's Firebase Config
+        const firebaseConfig = {
+          apiKey: "AIzaSyCE5FuoOTKLQV9tKf7jsXwS4-YIF3PCAYs",
+          authDomain: "ecom-25960.firebaseapp.com",
+          databaseURL: "https://ecom-25960-default-rtdb.firebaseio.com",
+          projectId: "ecom-25960",
+          storageBucket: "ecom-25960.firebasestorage.app",
+          messagingSenderId: "616836239037",
+          appId: "1:616836239037:web:a60ad5a141979e036831d4",
+          measurementId: "G-H4QLD1RZ5V"
+        };
+
+        // User's Gemini API Key
+        const GEMINI_API_KEY = "AIzaSyBzrprprCI-bInBXLtFCNZ5vh-14cCV0HZM";
+
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            createUserWithEmailAndPassword, 
+            onAuthStateChanged, 
+            signOut
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, 
+            doc, 
+            getDoc,
+            getDocs,
+            setDoc, 
+            addDoc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot, 
+            collection, 
+            query,
+            orderBy,
+            writeBatch,
+            increment,
+            Timestamp,
+            collectionGroup // New: For dashboard calculation
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ===== 2. TRANSLATIONS =====
+        const translations = {
+            en: {
+                // Login / General
+                adminLogin: "Admin Login",
+                dairyManagementSystem: "Dairy Management System",
+                email: "Email",
+                password: "Password",
+                login: "Login",
+                newUser: "New admin?",
+                signupHere: "Signup Here",
+                newAdminAccount: "New Admin Account",
+                signup: "Signup",
+                backToLogin: "Back to Login",
+                dairyAdmin: "Dairy Admin",
+                logout: "Logout",
+                adminId: "Admin ID",
+                cancel: "Cancel",
+                confirm: "Confirm", // New
+                
+                // Navigation
+                dashboard: "Dashboard",
+                customers: "Customers",
+                dailyLog: "Daily Log",
+                fatLog: "Fat Log",
+                expenses: "Expenses",
+                settings: "Settings",
+
+                // Dashboard
+                totalCustomers: "Total Customers",
+                totalBalance: "Total Balance",
+                monthlyExpenses: "This Month's Expenses",
+                monthlyPayments: "Payments Received (Month)", // New
+                todayFat: "Today's Fat",
+                fatHistory: "Fat History",
+
+                // Customers Page
+                manageCustomers: "Manage Customers",
+                addNewCustomer: "Add New Customer",
+                addCustomer: "Add Customer",
+                customerList: "Customer List",
+                name: "Name",
+                defaultQty: "Default Qty",
+                balanceAmount: "Balance Amount",
+                actions: "Actions",
+                milkType: "Milk Type",
+                shift: "Shift",
+                cowMilk: "Cow Milk",
+                buffaloMilk: "Buffalo Milk",
+                morningShift: "Morning Shift",
+                eveningShift: "Evening Shift",
+
+                // Daily Log Page
+                todayDate: "Today's Date",
+                cowMilkRate: "Cow Milk Rate", // Updated
+                buffaloMilkRate: "Buffalo Milk Rate", // Updated
+                setFromSettings: "Set from Settings",
+                milkDelivered: "Delivered?",
+                customer: "Customer",
+                quantityLiters: "Quantity (Liters)",
+                saveTodayLog: "Save Today's Log",
+                confirmLogSaveTitle: "Confirm Daily Log", // New
+                confirmLogSaveText: "Are you sure you want to save today's milk log? This will update customer balances.", // New
+
+                // Fat Log Page
+                manageFatLog: "Manage Fat Log",
+                addFatEntry: "Add New Fat Entry",
+                fatValue: "Fat Value",
+                addEntry: "Add Entry",
+                fatLogList: "Fat Log List",
+                
+                // Expenses Page
+                manageExpenses: "Manage Expenses",
+                addNewExpense: "Add New Expense",
+                addExpense: "Add Expense",
+                getGeminiSummary: "Get Monthly Expense Summary (with Gemini)",
+                expenseList: "Expense List",
+                date: "Date",
+                description: "Description",
+                amount: "Amount",
+
+                // Settings Page
+                setMilkRate: "Set Milk Rate",
+                milkRatePerLiter: "Milk Rate (per liter)", // Old, fallback
+                cowMilkRate: "Cow Milk Rate (per liter)", // New
+                buffaloMilkRate: "Buffalo Milk Rate (per liter)", // New
+                saveSettings: "Save Settings",
+                
+                // Payment Modal
+                receivePayment: "Receive Payment",
+                currentBalance: "Current Balance",
+                paymentAmount: "Payment Amount (₹)",
+                addPayment: "Add Payment",
+
+                // History Modal
+                milkHistory: "Milk History",
+                paymentHistory: "Payment History",
+                status: "Status",
+                quantity: "Quantity",
+                amountPaid: "Amount Paid",
+                present: "Present",
+                absent: "Absent",
+                phone: "Phone", // New
+                address: "Address", // New
+                details: "Details", // New
+
+                // Gemini Modal
+                geminiSummaryTitle: "Gemini Expense Summary",
+                geminiLoading: "Generating summary from Gemini...",
+                
+                // Placeholders
+                emailPlaceholder: "admin@email.com",
+                passwordPlaceholder: "••••••••",
+                customerName: "Customer's Name",
+                phoneNumber: "Phone Number",
+                address: "Address",
+                defaultMilk: "Default Milk (Liters)",
+                fatValuePlaceholder: "e.g., 8.7",
+                expenseDescription: "Expense Description",
+                amountPlaceholder: "Amount (₹)",
+                milkRateExample: "e.g., 50.50",
+                
+                // Dynamic messages
+                payment: "Payment",
+                delete: "Delete",
+                history: "History",
+                noCustomers: "No customers found. Add one above.",
+                noCustomersForLog: "Add customers from the 'Customers' page first.",
+                noExpenses: "No expenses found. Add one above.",
+                noFatLog: "No fat log found. Add one on the 'Fat Log' page.",
+                noMilkHistory: "No milk history found for this customer.",
+                noPaymentHistory: "No payment history found for this customer.",
+                confirmDeleteCustomer: "Are you sure you want to delete this customer? This action cannot be undone.",
+                confirmDeleteExpense: "Are you sure you want to delete this expense?",
+                confirmDeleteFat: "Are you sure you want to delete this fat log entry?", // New
+                customerAdded: "Customer added successfully!",
+                customerDeleted: "Customer deleted.",
+                expenseDeleted: "Expense deleted.",
+                fatLogDeleted: "Fat log entry deleted.", // New
+                validRate: "Please enter valid rates.", // Updated
+                settingsSaved: "Settings saved!",
+                nameAndQtyRequired: "Name and Default Qty are required.",
+                error: "Error: ",
+                paymentAdded: "Payment added successfully!",
+                validAmount: "Please enter a valid amount.",
+                milkRateRequired: "Please set Cow and Buffalo milk rates in 'Settings' first.", // Updated
+                logSaved: "Today's log saved successfully!",
+                allFieldsRequired: "All fields are required.",
+                expenseAdded: "Expense added successfully!",
+                fatEntryAdded: "Fat entry added successfully!",
+                geminiError: "Error generating summary: ",
+                geminiNoExpenses: "No expenses recorded this month for summary.",
+                geminiSystemPrompt: "You are a helpful diary manager assistant. You are given a list of expenses. Based on this list, provide a very short (2-3 line) summary in simple English. State the total expense and mention the largest expense category.",
+                geminiUserPrompt: "Here are my expenses for this month:\n{data}\n\nPlease provide the summary."
+            },
+            mr: {
+                // Login / General
+                adminLogin: "प्रशासक लॉगिन",
+                dairyManagementSystem: "डेअरी व्यवस्थापन प्रणाली",
+                email: "ईमेल",
+                password: "पासवर्ड",
+                login: "लॉगिन",
+                newUser: "नवीन प्रशासक?",
+                signupHere: "येथे साइन अप करा",
+                newAdminAccount: "नवीन प्रशासक खाते",
+                signup: "साइन अप करा",
+                backToLogin: "लॉगिनवर परत जा",
+                dairyAdmin: "डेअरी प्रशासक",
+                logout: "लॉगआउट",
+                adminId: "प्रशासक आयडी",
+                cancel: "रद्द करा",
+                confirm: "निश्चित करा", // New
+
+                // Navigation
+                dashboard: "डॅशबोर्ड",
+                customers: "ग्राहक",
+                dailyLog: "दैनंदिन नोंद",
+                fatLog: "फॅट नोंद",
+                expenses: "खर्च",
+                settings: "सेटिंग्ज",
+
+                // Dashboard
+                totalCustomers: "एकूण ग्राहक",
+                totalBalance: "एकूण थकबाकी",
+                monthlyExpenses: "या महिन्याचा खर्च",
+                monthlyPayments: "पेमेंट प्राप्त (महिना)", // New
+                todayFat: "आजचे फॅट",
+                fatHistory: "फॅट इतिहास",
+
+                // Customers Page
+                manageCustomers: "ग्राहक व्यवस्थापित करा",
+                addNewCustomer: "नवीन ग्राहक जोडा",
+                addCustomer: "ग्राहक जोडा",
+                customerList: "ग्राहकांची यादी",
+                name: "नाव",
+                defaultQty: "दूध (Qty)",
+                balanceAmount: "थकबाकी",
+                actions: "कृती",
+                milkType: "दुधाचा प्रकार",
+                shift: "शिफ्ट",
+                cowMilk: "गायीचे दूध",
+                buffaloMilk: "म्हशीचे दूध",
+                morningShift: "सकाळची शिफ्ट",
+                eveningShift: "संध्याकाळची शिफ्ट",
+                
+                // Daily Log Page
+                todayDate: "आजची तारीख",
+                cowMilkRate: "गायीच्या दुधाचा दर", // Updated
+                buffaloMilkRate: "म्हशीच्या दुधाचा दर", // Updated
+                setFromSettings: "सेटिंग्जमधून सेट करा",
+                milkDelivered: "दूध दिले?",
+                customer: "ग्राहक",
+                quantityLiters: "प्रमाण (लिटर)",
+                saveTodayLog: "आजची नोंद जतन करा",
+                confirmLogSaveTitle: "दैनंदिन नोंद निश्चित करा", // New
+                confirmLogSaveText: "तुम्हाला खात्री आहे की तुम्ही आजची दुधाची नोंद जतन करू इच्छिता? यामुळे ग्राहकांची थकबाकी अपडेट होईल.", // New
+
+                // Fat Log Page
+                manageFatLog: "फॅट नोंद व्यवस्थापित करा",
+                addFatEntry: "नवीन फॅट नोंद करा",
+                fatValue: "फॅट मूल्य",
+                addEntry: "नोंद करा",
+                fatLogList: "फॅट नोंद यादी",
+
+                // Expenses Page
+                manageExpenses: "खर्च व्यवस्थापित करा",
+                addNewExpense: "नवीन खर्च जोडा",
+                addExpense: "खर्च जोडा",
+                getGeminiSummary: "मासिक खर्चाचा सारांश मिळवा (Gemini सह)",
+                expenseList: "खर्चाची यादी",
+                date: "तاريخ",
+                description: "तपशील",
+                amount: "रक्कम",
+
+                // Settings Page
+                setMilkRate: "दुधाचा दर सेट करा",
+                milkRatePerLiter: "दुधाचा दर (प्रति लिटर)", // Old, fallback
+                cowMilkRate: "गायीच्या दुधाचा दर (प्रति लिटर)", // New
+                buffaloMilkRate: "म्हशीच्या दुधाचा दर (प्रति लिटर)", // New
+                saveSettings: "सेटिंग्ज जतन करा",
+
+                // Payment Modal
+                receivePayment: "पेमेंट प्राप्त करा",
+                currentBalance: "सध्याची थकबाकी",
+                paymentAmount: "पेमेंट रक्कम (₹)",
+                addPayment: "पेमेंट जोडा",
+
+                // History Modal
+                milkHistory: "दुधाचा इतिहास",
+                paymentHistory: "पेमेंट इतिहास",
+                status: "स्थिती",
+                quantity: "प्रमाण",
+                amountPaid: "दिलेली रक्कम",
+                present: "हजर",
+                absent: "गैरहजर",
+                phone: "फोन", // New
+                address: "पत्ता", // New
+                details: "तपशील", // New
+
+                // Gemini Modal
+                geminiSummaryTitle: "Gemini खर्चाचा सारांश",
+                geminiLoading: "Gemini कडून सारांश तयार होत आहे...",
+                
+                // Placeholders
+                emailPlaceholder: "admin@email.com",
+                passwordPlaceholder: "••••••••",
+                customerName: "ग्राहकाचे नाव",
+                phoneNumber: "फोन नंबर",
+                address: "पत्ता",
+                defaultMilk: "दूध (लिटर)",
+                fatValuePlaceholder: "उदा. ८.७",
+                expenseDescription: "खर्चाचा तपशील",
+                amountPlaceholder: "रक्कम (₹)",
+                milkRateExample: "उदा. ५०.५०",
+                
+                // Dynamic messages
+                payment: "पेमेंट",
+                delete: "हटवा",
+                history: "इतिहास",
+                noCustomers: "एकही ग्राहक आढळला नाही. वर एक जोडा.",
+                noCustomersForLog: "कृपया आधी 'ग्राहक' पेजवरून ग्राहक जोडा.",
+                noExpenses: "एकही खर्च आढळला नाही. वर एक जोडा.",
+                noFatLog: "फॅट नोंद आढळली नाही. 'फॅट नोंद' पेजवर एक जोडा.",
+                noMilkHistory: "या ग्राहकासाठी दुधाचा इतिहास आढळला नाही.",
+                noPaymentHistory: "या ग्राहकासाठी कोणताही पेमेंट इतिहास आढळला नाही.",
+                confirmDeleteCustomer: "तुम्हाला खात्री आहे की तुम्ही या ग्राहकाला हटवू इच्छिता? ही क्रिया पूर्ववत करता येणार नाही.",
+                confirmDeleteExpense: "तुम्हाला खात्री आहे की तुम्ही हा खर्च हटवू इच्छिता?",
+                confirmDeleteFat: "तुम्हाला खात्री आहे की तुम्ही ही फॅट नोंद हटवू इच्छिता?", // New
+                customerAdded: "ग्राहक यशस्वीरित्या जोडला!",
+                customerDeleted: "ग्राहक हटवला.",
+                expenseDeleted: "खर्च हटवला.",
+                fatLogDeleted: "फॅट नोंद हटवली.", // New
+                validRate: "कृपया वैध दर प्रविष्ट करा.", // Updated
+                settingsSaved: "सेटिंग्ज जतन केल्या!",
+                nameAndQtyRequired: "नाव आणि दुधाचे प्रमाण आवश्यक आहे.",
+                error: "त्रुटी: ",
+                paymentAdded: "पेमेंट यशस्वीरित्या जोडले!",
+                validAmount: "कृपया वैध रक्कम प्रविष्ट करा.",
+                milkRateRequired: "कृपया आधी 'सेटिंग्ज' मध्ये गाय आणि म्हशीच्या दुधाचे दर सेट करा.", // Updated
+                logSaved: "आजची नोंद यशस्वीरित्या जतन केली!",
+                allFieldsRequired: "सर्व फील्ड आवश्यक आहेत.",
+                expenseAdded: "खर्च यशस्वीरित्या जोडला!",
+                fatEntryAdded: "फॅट नोंद यशस्वीरित्या जोडली!",
+                geminiError: "सारांश तयार करताना त्रुटी: ",
+                geminiNoExpenses: "सारांशसाठी या महिन्यात कोणताही खर्च नोंदवला नाही.",
+                geminiSystemPrompt: "तुम्ही एक उपयुक्त डेअरी व्यवस्थापक सहाय्यक आहात. तुम्हाला खर्चाची यादी दिली आहे. या यादीच्या आधारे, साधा मराठीत एक छोटा (२-३ ओळींचा) सारांश द्या. एकूण खर्च सांगा आणि सर्वात मोठ्या खर्चाच्या श्रेणीचा उल्लेख करा.",
+                geminiUserPrompt: "हा माझा या महिन्याचा खर्च आहे:\n{data}\n\nकृपया याचा सारांश द्या."
+            }
+        };
+
+        // Global state
+        let currentLanguage = 'en';
+        let currentAdmin = null;
+        let currentAdminId = null;
+        let milkPriceCow = 0; // Updated
+        let milkPriceBuffalo = 0; // Updated
+        let customerCollectionRef = null;
+        let expenseCollectionRef = null;
+        let fatLogCollectionRef = null;
+        let settingsDocRef = null;
+        let milkLogUnsubscriber = null;
+        let paymentLogUnsubscriber = null;
+        let fatChartInstance = null;
+        let allFatData = [];
+        let allCustomers = []; // Cache for customers
+        let confirmCallback = null; // New for confirm modal
+
+
+        // DOM Elements
+        const loginView = document.getElementById('login-view');
+        const adminView = document.getElementById('admin-view');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const showSignupBtn = document.getElementById('show-signup-btn');
+        const showLoginBtn = document.getElementById('show-login-btn');
+        const authError = document.getElementById('auth-error');
+        const logoutBtn = document.getElementById('logout-btn');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pages = document.querySelectorAll('[data-page]');
+        const adminUserIdElement = document.getElementById('admin-user-id');
+        const toast = document.getElementById('toast-notification');
+        const toastMessage = document.getElementById('toast-message');
+        const langButtons = document.querySelectorAll('.lang-btn');
+
+        // Mobile Menu DOMs
+        const menuToggleBtn = document.getElementById('menu-toggle-btn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+        // Payment Modal Elements
+        const paymentModalBackdrop = document.getElementById('payment-modal-backdrop');
+        const paymentModalContent = document.getElementById('payment-modal-content');
+        const paymentForm = document.getElementById('payment-form');
+        const cancelPaymentBtn = document.getElementById('cancel-payment-btn');
+
+        // Gemini Summary Modal Elements
+        const summaryModalBackdrop = document.getElementById('summary-modal-backdrop');
+        const summaryModalContent = document.getElementById('summary-modal-content');
+        const closeSummaryBtn = document.getElementById('close-summary-btn');
+        const summaryLoading = document.getElementById('summary-loading');
+        const summaryResult = document.getElementById('summary-result');
+        const getExpenseSummaryBtn = document.getElementById('get-expense-summary-btn');
+
+        // History Modal Elements
+        const historyModalBackdrop = document.getElementById('history-modal-backdrop');
+        const historyModalContent = document.getElementById('history-modal-content');
+        const closeHistoryBtn = document.getElementById('close-history-btn');
+        const historyCustomerName = document.getElementById('history-customer-name');
+        const historyCustomerInfo = document.getElementById('history-customer-info');
+        const milkHistoryList = document.getElementById('milk-history-list');
+        const paymentHistoryList = document.getElementById('payment-history-list');
+        const noMilkHistory = document.getElementById('no-milk-history');
+        const noPaymentHistory = document.getElementById('no-payment-history');
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // Custom Confirm Modal (New)
+        const confirmModalBackdrop = document.getElementById('confirm-modal-backdrop');
+        const confirmModalContent = document.getElementById('confirm-modal-content');
+        const confirmModalTitle = document.getElementById('confirm-modal-title');
+        const confirmModalBody = document.getElementById('confirm-modal-body');
+        const confirmModalCancel = document.getElementById('confirm-modal-cancel');
+        const confirmModalConfirm = document.getElementById('confirm-modal-confirm');
+
+
+        // ===== 3. LANGUAGE & HELPER FUNCTIONS =====
+
+        function t(key) {
+            return translations[currentLanguage][key] || key;
+        }
+
+        function setLanguage(lang) {
+            if (!translations[lang]) return;
+            currentLanguage = lang;
+            localStorage.setItem('dairyLang', lang); 
+
+            langButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            document.querySelectorAll('[data-lang-key]').forEach(el => {
+                const key = el.dataset.langKey;
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+
+            document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
+                const key = el.dataset.langPlaceholder;
+                if (translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+
+            if (currentAdminId) {
+                // Re-render lists to apply translations
+                listenToCustomers();
+                listenToExpenses();
+                listenToFatLog();
+                // Update today's date format
+                document.getElementById('today-date').textContent = new Date().toLocaleDateString(currentLanguage === 'mr' ? 'mr-IN' : 'en-IN');
+            }
+        }
+
+        langButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setLanguage(btn.dataset.lang);
+            });
+        });
+
+        function showToast(messageKey, isError = false) {
+            toastMessage.textContent = t(messageKey); 
+            toast.classList.toggle('bg-green-600', !isError);
+            toast.classList.toggle('bg-red-600', isError);
+            toast.classList.remove('hidden', 'translate-y-10', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => toast.classList.add('hidden'), 300);
+            }, 3000);
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR'
+            }).format(amount);
+        }
+
+        function getTodayDateString() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // New: Custom Confirm Modal Functions
+        function showConfirmModal(titleKey, bodyKey, onConfirm) {
+            confirmModalTitle.textContent = t(titleKey);
+            confirmModalBody.textContent = t(bodyKey);
+            confirmCallback = onConfirm;
+            confirmModalBackdrop.classList.add('active');
+            confirmModalContent.classList.add('active');
+        }
+
+        function closeConfirmModal() {
+            confirmModalBackdrop.classList.remove('active');
+            confirmModalContent.classList.remove('active');
+            confirmCallback = null;
+        }
+
+        confirmModalCancel.addEventListener('click', closeConfirmModal);
+        confirmModalBackdrop.addEventListener('click', closeConfirmModal);
+        confirmModalConfirm.addEventListener('click', () => {
+            if (confirmCallback) {
+                confirmCallback();
+            }
+            closeConfirmModal();
+        });
+
+        
+        // ===== 4. AUTHENTICATION =====
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentAdmin = user;
+                currentAdminId = user.uid;
+                
+                const adminDataPath = `dairyAdmins/${currentAdminId}`;
+                customerCollectionRef = collection(db, adminDataPath, 'customers');
+                expenseCollectionRef = collection(db, adminDataPath, 'expenses');
+                fatLogCollectionRef = collection(db, adminDataPath, 'fatLog');
+                settingsDocRef = doc(db, adminDataPath, 'settings', 'main');
+
+                // New: Log admin activity
+                const adminActivityDoc = doc(db, 'adminActivity', currentAdminId);
+                setDoc(adminActivityDoc, {
+                    email: user.email,
+                    lastLogin: Timestamp.now()
+                }, { merge: true });
+
+
+                loginView.style.display = 'none';
+                adminView.style.display = 'block';
+                adminUserIdElement.textContent = currentAdminId;
+                
+                initAppLogic(); 
+            } else {
+                currentAdmin = null;
+                currentAdminId = null;
+                loginView.style.display = 'flex';
+                adminView.style.display = 'none';
+            }
+            setLanguage(localStorage.getItem('dairyLang') || 'en');
+        });
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            authError.textContent = '';
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                authError.textContent = `Login failed: ${error.message}`;
+            }
+        });
+
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            authError.textContent = '';
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                authError.textContent = `Signup failed: ${error.message}`;
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
+        });
+
+        showSignupBtn.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            signupForm.classList.remove('hidden');
+            authError.textContent = '';
+        });
+        showLoginBtn.addEventListener('click', () => {
+            loginForm.classList.remove('hidden');
+            signupForm.classList.add('hidden');
+            authError.textContent = '';
+        });
+
+        // ===== 5. NAVIGATION & MOBILE UI =====
+        
+        // Mobile sidebar toggle
+        menuToggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('-translate-x-full');
+            sidebarOverlay.classList.toggle('hidden');
+        });
+        sidebarOverlay.addEventListener('click', () => {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('hidden');
+        });
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetId = link.getAttribute('href').substring(1); 
+                
+                navLinks.forEach(nav => nav.classList.remove('bg-gray-100', 'text-blue-600'));
+                link.classList.add('bg-gray-100', 'text-blue-600');
+                
+                pages.forEach(page => {
+                    page.classList.toggle('active', page.id === `${targetId}-page`);
+                });
+
+                // New: Set fat date when navigating to fat-log
+                if (targetId === 'fat-log') {
+                    document.getElementById('fat-date').value = getTodayDateString();
+                }
+
+                // Close sidebar on mobile after navigation
+                if (window.innerWidth < 768) { // md breakpoint
+                    sidebar.classList.add('-translate-x-full');
+                    sidebarOverlay.classList.add('hidden');
+                }
+            });
+        });
+
+        // ===== 6. APP INITIALIZATION =====
+        function initAppLogic() {
+            if (!currentAdminId) return;
+            document.querySelector('.nav-link[href="#dashboard"]').click();
+            listenToSettings();
+            listenToCustomers();
+            listenToExpenses();
+            listenToFatLog();
+            loadDashboardStats(); 
+            document.getElementById('today-date').textContent = new Date().toLocaleDateString(currentLanguage === 'mr' ? 'mr-IN' : 'en-IN');
+            document.getElementById('fat-date').value = getTodayDateString(); // Set fat date on init
+            setLanguage(localStorage.getItem('dairyLang') || 'en');
+            setupChartFilterButtons();
+        }
+        
+        // ===== 7. DASHBOARD =====
+        async function loadDashboardStats() {
+            const totalCustomersEl = document.getElementById('stat-total-customers');
+            const totalBalanceEl = document.getElementById('stat-total-balance');
+            const totalExpensesEl = document.getElementById('stat-total-expenses');
+            const totalPaymentsEl = document.getElementById('stat-total-payments'); // New
+            
+            if (customerCollectionRef) {
+                onSnapshot(customerCollectionRef, (snapshot) => {
+                    const count = snapshot.size;
+                    let totalBalance = 0;
+                    snapshot.forEach(doc => {
+                        totalBalance += doc.data().currentBalance || 0;
+                    });
+                    totalCustomersEl.textContent = count;
+                    totalBalanceEl.textContent = formatCurrency(totalBalance);
+                });
+            }
+            
+            const today = new Date();
+            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            const firstDayOfMonthString = getTodayDateString().substring(0, 8) + '01'; // YYYY-MM-01
+
+            // Monthly Expenses
+            if (expenseCollectionRef) {
+                onSnapshot(expenseCollectionRef, (snapshot) => {
+                    let totalExpenses = 0;
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.date && data.date >= firstDayOfMonthString) {
+                            totalExpenses += data.amount || 0;
+                        }
+                    });
+                    totalExpensesEl.textContent = formatCurrency(totalExpenses);
+                });
+            }
+
+            // New: Monthly Payments Received
+            // This is a heavy query, run it once on load and then listen for new payments
+            // For simplicity, we'll listen to all paymentLogs.
+            // This will only work if the user has a small number of customers.
+            // For a larger app, this calculation should be done server-side.
+            if (currentAdminId) {
+                const paymentLogsRef = collectionGroup(db, 'paymentLog');
+                // We query *all* payment logs for this admin's customers.
+                // This is not ideal, but it's the only way without changing DB structure.
+                // We can't filter by admin_id here, so we listen and check.
+                // A better structure would be a root `payments` collection.
+                // Given the current structure, we'll query all payment logs.
+                
+                try {
+                    // This query is insecure and inefficient as it queries ALL paymentLogs in Firestore.
+                    // A proper implementation would require `where('adminId', '==', currentAdminId)`
+                    // but the DB structure (sub-collection) doesn't support that easily.
+                    
+                    // Let's just calculate based on customers we *know* about.
+                    // This is still N reads, but only on dashboard load.
+                    let totalPayments = 0;
+                    const customerSnapshot = await getDocs(customerCollectionRef);
+                    for (const customerDoc of customerSnapshot.docs) {
+                        const paymentLogCol = collection(db, customerDoc.ref.path, 'paymentLog');
+                        const paymentSnapshot = await getDocs(paymentLogCol);
+                        paymentSnapshot.forEach(paymentDoc => {
+                            const payment = paymentDoc.data();
+                            if (payment.date && payment.date >= firstDayOfMonthString) {
+                                totalPayments += payment.amount || 0;
+                            }
+                        });
+                    }
+                    totalPaymentsEl.textContent = formatCurrency(totalPayments);
+                    
+                } catch (e) {
+                    console.error("Error fetching monthly payments: ", e);
+                    totalPaymentsEl.textContent = "Error";
+                }
+            }
+        }
+
+        // ===== 8. SETTINGS =====
+        const settingsForm = document.getElementById('settings-form');
+        const cowMilkPriceInput = document.getElementById('milk-price-cow'); // Updated
+        const buffaloMilkPriceInput = document.getElementById('milk-price-buffalo'); // Updated
+        
+        function listenToSettings() {
+            if (!settingsDocRef) return;
+            onSnapshot(settingsDocRef, (doc) => {
+                if (doc.exists()) {
+                    const data = doc.data();
+                    milkPriceCow = data.milkPriceCow || 0;
+                    milkPriceBuffalo = data.milkPriceBuffalo || 0;
+                    cowMilkPriceInput.value = milkPriceCow;
+                    buffaloMilkPriceInput.value = milkPriceBuffalo;
+                    document.getElementById('log-cow-milk-price').textContent = `${formatCurrency(milkPriceCow)}/L`;
+                    document.getElementById('log-buffalo-milk-price').textContent = `${formatCurrency(milkPriceBuffalo)}/L`;
+                } else {
+                    setDoc(settingsDocRef, { milkPriceCow: 0, milkPriceBuffalo: 0 });
+                }
+            });
+        }
+        
+        settingsForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const newCowPrice = parseFloat(cowMilkPriceInput.value);
+            const newBuffaloPrice = parseFloat(buffaloMilkPriceInput.value);
+            
+            if (isNaN(newCowPrice) || newCowPrice < 0 || isNaN(newBuffaloPrice) || newBuffaloPrice < 0) {
+                showToast("validRate", true);
+                return;
+            }
+            try {
+                await setDoc(settingsDocRef, { milkPriceCow: newCowPrice, milkPriceBuffalo: newBuffaloPrice });
+                showToast("settingsSaved");
+            } catch (error) {
+                showToast(t("error") + error.message, true);
+            }
+        });
+
+        // ===== 9. CUSTOMERS =====
+        const addCustomerForm = document.getElementById('add-customer-form');
+        const customerList = document.getElementById('customer-list');
+        
+        addCustomerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('customer-name').value;
+            const phone = document.getElementById('customer-phone').value;
+            const address = document.getElementById('customer-address').value;
+            const defaultQty = parseFloat(document.getElementById('customer-qty').value);
+            const milkType = document.getElementById('customer-milk-type').value;
+            const shift = document.getElementById('customer-shift').value;
+            
+            if (!name || isNaN(defaultQty)) {
+                showToast("nameAndQtyRequired", true);
+                return;
+            }
+            
+            try {
+                await addDoc(customerCollectionRef, {
+                    name, phone, address, defaultQty, milkType, shift, currentBalance: 0,
+                    createdAt: Timestamp.now()
+                });
+                showToast("customerAdded");
+                addCustomerForm.reset();
+            } catch (error) {
+                showToast(t("error") + error.message, true);
+            }
+        });
+
+        function listenToCustomers() {
+            if (!customerCollectionRef) return;
+            onSnapshot(customerCollectionRef, (snapshot) => {
+                allCustomers = []; // Reset cache
+                snapshot.forEach(doc => {
+                    allCustomers.push({ id: doc.id, ...doc.data() });
+                });
+                allCustomers.sort((a, b) => a.name.localeCompare(b.name));
+                renderCustomerList(allCustomers);
+                renderDailyLog(allCustomers); 
+            });
+        }
+
+        function renderCustomerList(customers) {
+            customerList.innerHTML = ''; 
+            if (customers.length === 0) {
+                customerList.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-gray-500">${t("noCustomers")}</td></tr>`;
+                return;
+            }
+            
+            customers.forEach(customer => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                
+                const milkTypeDisplay = customer.milkType === 'cow' ? t('cowMilk') : t('buffaloMilk');
+                const shiftDisplay = customer.shift === 'morning' ? t('morningShift') : t('eveningShift');
+                
+                // New: Stringify customer data for history modal
+                const customerDataString = JSON.stringify(customer);
+                
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <a href="#" class="btn-history text-sm font-medium text-blue-600 hover:underline" data-id="${customer.id}" data-customer-json='${customerDataString}'>${customer.name}</a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${milkTypeDisplay}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${shiftDisplay}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${customer.defaultQty} L</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold ${customer.currentBalance > 0 ? 'text-red-600' : (customer.currentBalance < 0 ? 'text-green-600' : 'text-gray-900')}">
+                        ${formatCurrency(customer.currentBalance)}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <button data-id="${customer.id}" data-name="${customer.name}" data-balance="${customer.currentBalance}" class="btn-payment px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors" title="${t('payment')}">
+                            <i class="fas fa-receipt"></i>
+                        </button>
+                        <button data-id="${customer.id}" class="btn-delete px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors" title="${t('delete')}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                customerList.appendChild(row);
+            });
+        }
+        
+        customerList.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const target = e.target.closest('button, a');
+            if (!target) return;
+            
+            const customerId = target.dataset.id;
+            
+            if (target.classList.contains('btn-delete')) {
+                // Use new confirm modal
+                showConfirmModal("confirmDeleteCustomer", "confirmDeleteCustomer", async () => {
+                    try {
+                        await deleteDoc(doc(customerCollectionRef, customerId));
+                        showToast("customerDeleted");
+                    } catch (error) {
+                        showToast(t("error") + error.message, true);
+                    }
+                });
+            }
+            
+            if (target.classList.contains('btn-payment')) {
+                const name = target.dataset.name;
+                const balance = target.dataset.balance;
+                document.getElementById('payment-customer-name').textContent = name;
+                document.getElementById('payment-customer-balance').textContent = formatCurrency(parseFloat(balance));
+                document.getElementById('payment-customer-id').value = customerId;
+                paymentModalBackdrop.classList.add('active');
+                paymentModalContent.classList.add('active');
+            }
+
+            if (target.classList.contains('btn-history')) {
+                const customer = JSON.parse(target.dataset.customerJson);
+                openHistoryModal(customer);
+            }
+        });
+
+        // ===== 10. PAYMENT MODAL =====
+        function closePaymentModal() {
+            paymentModalBackdrop.classList.remove('active');
+            paymentModalContent.classList.remove('active');
+            paymentForm.reset();
+        }
+        cancelPaymentBtn.addEventListener('click', closePaymentModal);
+        paymentModalBackdrop.addEventListener('click', closePaymentModal);
+        
+        paymentForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const customerId = document.getElementById('payment-customer-id').value;
+            const amount = parseFloat(document.getElementById('payment-amount').value);
+            
+            if (isNaN(amount) || amount <= 0) {
+                showToast("validAmount", true);
+                return;
+            }
+            
+            try {
+                const customerDocRef = doc(customerCollectionRef, customerId);
+                const paymentLogCol = collection(db, customerDocRef.path, 'paymentLog');
+                
+                const batch = writeBatch(db);
+                
+                // 1. Add payment log
+                const newPaymentRef = doc(paymentLogCol);
+                batch.set(newPaymentRef, {
+                    date: getTodayDateString(),
+                    amount: amount,
+                    createdAt: Timestamp.now()
+                });
+                
+                // 2. Update customer balance
+                batch.update(customerDocRef, {
+                    currentBalance: increment(-amount)
+                });
+                
+                await batch.commit();
+                
+                showToast("paymentAdded");
+                closePaymentModal();
+                loadDashboardStats(); // Refresh dashboard payments
+            } catch (error) {
+                showToast(t("error") + error.message, true);
+            }
+        });
+
+
+        // ===== 11. DAILY LOG =====
+        const dailyLogList = document.getElementById('daily-log-list');
+        const dailyLogForm = document.getElementById('daily-log-form');
+
+        function renderDailyLog(customers) {
+            dailyLogList.innerHTML = ''; 
+            if (customers.length === 0) {
+                dailyLogList.innerHTML = `<tr><td colspan="3" class="text-center p-6 text-gray-500">${t("noCustomersForLog")}</td></tr>`;
+                return;
+            }
+
+            customers.forEach(customer => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4">
+                        <input type="checkbox" data-id="${customer.id}" data-milk-type="${customer.milkType}" class="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 log-checkbox">
+                    </td>
+                    <td class="px-6 py-4">
+                        <label class="text-sm font-medium text-gray-900">${customer.name} (${t(customer.shift)} - ${t(customer.milkType)})</label>
+                    </td>
+                    <td class="px-6 py-4">
+                        <input type="number" step="0.5" min="0" value="${customer.defaultQty}" class="log-qty p-1 border rounded-md w-24" disabled>
+                    </td>
+                `;
+                dailyLogList.appendChild(row);
+            });
+            
+            dailyLogList.querySelectorAll('.log-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', (e) => {
+                    const qtyInput = e.target.closest('tr').querySelector('.log-qty');
+                    qtyInput.disabled = !e.target.checked;
+                });
+            });
+        }
+        
+        dailyLogForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (milkPriceCow <= 0 || milkPriceBuffalo <= 0) {
+                showToast("milkRateRequired", true);
+                return;
+            }
+            
+            // Use new confirm modal
+            showConfirmModal("confirmLogSaveTitle", "confirmLogSaveText", async () => {
+                const batch = writeBatch(db);
+                const allRows = dailyLogList.querySelectorAll('tbody tr');
+                const today = getTodayDateString();
+                
+                allRows.forEach(row => {
+                    const checkbox = row.querySelector('.log-checkbox');
+                    if (!checkbox) return;
+                    
+                    const customerId = checkbox.dataset.id;
+                    const milkType = checkbox.dataset.milkType; // Get milk type
+                    const customerDocRef = doc(customerCollectionRef, customerId);
+                    const milkLogDocRef = doc(collection(db, customerDocRef.path, 'milkLog'));
+                    
+                    if (checkbox.checked) {
+                        const qty = parseFloat(row.querySelector('.log-qty').value);
+                        if (qty > 0) {
+                            // Use correct price based on milk type
+                            const price = milkType === 'cow' ? milkPriceCow : milkPriceBuffalo;
+                            const amountToBeAdded = qty * price;
+                            
+                            batch.update(customerDocRef, { currentBalance: increment(amountToBeAdded) });
+                            batch.set(milkLogDocRef, {
+                                date: today,
+                                status: 'present',
+                                qty: qty,
+                                amount: amountToBeAdded,
+                                createdAt: Timestamp.now()
+                            });
+                        }
+                    } else {
+                        batch.set(milkLogDocRef, {
+                            date: today,
+                            status: 'absent',
+                            qty: 0,
+                            amount: 0,
+                            createdAt: Timestamp.now()
+                        });
+                    }
+                });
+                
+                try {
+                    await batch.commit();
+                    showToast("logSaved");
+                    dailyLogList.querySelectorAll('.log-checkbox:checked').forEach(cb => {
+                        cb.checked = false;
+                        cb.closest('tr').querySelector('.log-qty').disabled = true;
+                    });
+                } catch (error) {
+                    showToast(t("error") + error.message, true);
+                }
+            });
+        });
+
+        // ===== 12. EXPENSES =====
+        const addExpenseForm = document.getElementById('add-expense-form');
+        const expenseList = document.getElementById('expense-list');
+        
+        addExpenseForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const date = document.getElementById('expense-date').value;
+            const description = document.getElementById('expense-desc').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            
+            if (!date || !description || isNaN(amount) || amount <= 0) {
+                showToast("allFieldsRequired", true);
+                return;
+            }
+            
+            try {
+                await addDoc(expenseCollectionRef, {
+                    date, description, amount,
+                    createdAt: Timestamp.now()
+                });
+                showToast("expenseAdded");
+                addExpenseForm.reset();
+            } catch (error) {
+                showToast(t("error") + error.message, true);
+            }
+        });
+
+        expenseList.addEventListener('click', async (e) => {
+            const target = e.target.closest('.btn-delete-expense');
+            if (!target) return;
+            
+            const expenseId = target.dataset.id;
+            
+            // Use new confirm modal
+            showConfirmModal("confirmDeleteExpense", "confirmDeleteExpense", async () => {
+                try {
+                    await deleteDoc(doc(expenseCollectionRef, expenseId));
+                    showToast("expenseDeleted");
+                } catch (error) {
+                    showToast(t("error") + error.message, true);
+                }
+            });
+        });
+
+        function listenToExpenses() {
+            if (!expenseCollectionRef) return;
+            onSnapshot(expenseCollectionRef, (snapshot) => {
+                const expenses = [];
+                snapshot.forEach(doc => {
+                    expenses.push({ id: doc.id, ...doc.data() });
+                });
+                expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
+                renderExpenseList(expenses);
+            });
+        }
+        
+        function renderExpenseList(expenses) {
+            expenseList.innerHTML = ''; 
+            if (expenses.length === 0) {
+                expenseList.innerHTML = `<tr><td colspan="4" class="text-center p-6 text-gray-500">${t("noExpenses")}</td></tr>`;
+                return;
+            }
+            
+            expenses.forEach(expense => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${expense.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${expense.description}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">${formatCurrency(expense.amount)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button data-id="${expense.id}" class="btn-delete-expense px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors" title="${t('delete')}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                expenseList.appendChild(row);
+            });
+        }
+
+
+        // ===== 13. GEMINI API FUNCTIONS =====
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        async function callGeminiApi(payload, retries = 5, delay = 1000) {
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${GEMINI_API_KEY}`;
+            
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const result = await response.json();
+                    
+                    if (result.candidates && result.candidates[0].content && result.candidates[0].content.parts[0].text) {
+                        return result.candidates[0].content.parts[0].text;
+                    } else {
+                        throw new Error("Invalid response structure from Gemini API.");
+                    }
+                } catch (error) {
+                    console.warn(`Gemini API call failed (attempt ${i + 1}):`, error.message);
+                    if (i === retries - 1) throw error; 
+                    await sleep(delay);
+                    delay *= 2; 
+                }
+            }
+        }
+
+        async function handleExpenseSummary() {
+            summaryLoading.style.display = 'block';
+            summaryResult.style.display = 'none';
+            summaryResult.textContent = '';
+            summaryModalBackdrop.classList.add('active');
+            summaryModalContent.classList.add('active');
+
+            try {
+                const firstDayOfMonthString = getTodayDateString().substring(0, 8) + '01'; // YYYY-MM-01
+                
+                const expenses = [];
+                const q = query(expenseCollectionRef);
+                const querySnapshot = await getDocs(q);
+
+                querySnapshot.forEach(doc => {
+                    expenses.push(doc.data());
+                });
+
+                const thisMonthExpenses = expenses.filter(ex => ex.date >= firstDayOfMonthString);
+
+                if (thisMonthExpenses.length === 0) {
+                    summaryResult.textContent = t("geminiNoExpenses");
+                    summaryLoading.style.display = 'none';
+                    summaryResult.style.display = 'block';
+                    return;
+                }
+
+                const expensePromptData = thisMonthExpenses.map(ex => `Taarikh: ${ex.date}, Vivaran: ${ex.description}, Raashi: ${formatCurrency(ex.amount)}`).join('\n');
+                const systemPrompt = t("geminiSystemPrompt");
+                const userPrompt = t("geminiUserPrompt").replace('{data}', expensePromptData);
+
+                const payload = {
+                    contents: [{ parts: [{ text: userPrompt }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                };
+
+                const summaryText = await callGeminiApi(payload);
+
+                summaryResult.textContent = summaryText;
+                summaryLoading.style.display = 'none';
+                summaryResult.style.display = 'block';
+
+            } catch (error) {
+                summaryResult.textContent = t("geminiError") + error.message;
+                summaryLoading.style.display = 'none';
+                summaryResult.style.display = 'block';
+            }
+        }
+        
+        getExpenseSummaryBtn.addEventListener('click', handleExpenseSummary);
+        
+        function closeSummaryModal() {
+            summaryModalBackdrop.classList.remove('active');
+            summaryModalContent.classList.remove('active');
+        }
+        closeSummaryBtn.addEventListener('click', closeSummaryModal);
+        summaryModalBackdrop.addEventListener('click', closeSummaryModal);
+
+        // ===== 14. CUSTOMER HISTORY MODAL =====
+        
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetTab = btn.dataset.tab;
+                
+                tabButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                tabContents.forEach(content => {
+                    content.classList.toggle('active', content.id === `${targetTab}-content`);
+                });
+            });
+        });
+
+        function openHistoryModal(customer) { // Updated to accept full customer object
+            if (milkLogUnsubscriber) milkLogUnsubscriber();
+            if (paymentLogUnsubscriber) paymentLogUnsubscriber();
+
+            document.querySelector('.tab-btn[data-tab="milk-history"]').click();
+            
+            historyModalBackdrop.classList.add('active');
+            historyModalContent.classList.add('active');
+
+            // New: Populate customer details
+            historyCustomerName.textContent = customer.name;
+            historyCustomerInfo.innerHTML = `
+                <p><i class="fas fa-phone w-4"></i> ${customer.phone || 'N/A'}</p>
+                <p><i class="fas fa-map-marker-alt w-4"></i> ${customer.address || 'N/A'}</p>
+                <p class="mt-2"><strong data-lang-key="details">Details</strong>: 
+                    ${customer.defaultQty}L, ${t(customer.milkType)}, ${t(customer.shift)}
+                </p>
+            `;
+
+            const customerId = customer.id;
+            // --- Load Milk History ---
+            const milkLogCol = collection(db, customerCollectionRef.path, customerId, 'milkLog');
+            const milkQuery = query(milkLogCol, orderBy('createdAt', 'desc'));
+            
+            milkLogUnsubscriber = onSnapshot(milkQuery, (snapshot) => {
+                milkHistoryList.innerHTML = '';
+                if (snapshot.empty) {
+                    noMilkHistory.style.display = 'block';
+                    return;
+                }
+                noMilkHistory.style.display = 'none';
+                snapshot.forEach(doc => {
+                    const log = doc.data();
+                    const statusClass = log.status === 'present' ? 'text-green-600' : 'text-red-600';
+                    const statusText = log.status === 'present' ? t('present') : t('absent');
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-4 py-3 text-sm text-gray-700">${log.date}</td>
+                        <td class="px-4 py-3 text-sm font-medium ${statusClass}">${statusText}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${log.qty} L</td>
+                        <td class="px-4 py-3 text-sm text-gray-700">${formatCurrency(log.amount)}</td>
+                    `;
+                    milkHistoryList.appendChild(row);
+                });
+            });
+
+            // --- Load Payment History ---
+            const paymentLogCol = collection(db, customerCollectionRef.path, customerId, 'paymentLog');
+            const paymentQuery = query(paymentLogCol, orderBy('createdAt', 'desc'));
+            
+            paymentLogUnsubscriber = onSnapshot(paymentQuery, (snapshot) => {
+                paymentHistoryList.innerHTML = '';
+                if (snapshot.empty) {
+                    noPaymentHistory.style.display = 'block';
+                    return;
+                }
+                noPaymentHistory.style.display = 'none';
+                snapshot.forEach(doc => {
+                    const log = doc.data();
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-4 py-3 text-sm text-gray-700">${log.date}</td>
+                        <td class="px-4 py-3 text-sm font-semibold text-green-700">${formatCurrency(log.amount)}</td>
+                    `;
+                    paymentHistoryList.appendChild(row);
+                });
+            });
+        }
+        
+        function closeHistoryModal() {
+            if (milkLogUnsubscriber) milkLogUnsubscriber();
+            if (paymentLogUnsubscriber) paymentLogUnsubscriber();
+            milkLogUnsubscriber = null;
+            paymentLogUnsubscriber = null;
+            
+            historyModalBackdrop.classList.remove('active');
+            historyModalContent.classList.remove('active');
+        }
+        
+        closeHistoryBtn.addEventListener('click', closeHistoryModal);
+        historyModalBackdrop.addEventListener('click', closeHistoryModal);
+
+        // ===== 15. FAT LOG & CHART =====
+        const addFatLogForm = document.getElementById('add-fat-log-form');
+        const fatLogList = document.getElementById('fat-log-list');
+
+        addFatLogForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const date = document.getElementById('fat-date').value;
+            const fatValue = parseFloat(document.getElementById('fat-value').value);
+
+            if (!date || isNaN(fatValue) || fatValue <= 0) {
+                showToast("allFieldsRequired", true);
+                return;
+            }
+
+            try {
+                await addDoc(fatLogCollectionRef, {
+                    date,
+                    fatValue,
+                    createdAt: Timestamp.now()
+                });
+                showToast("fatEntryAdded");
+                addFatLogForm.reset();
+                document.getElementById('fat-date').value = getTodayDateString(); // Reset date
+            } catch (error) {
+                showToast(t("error") + error.message, true);
+            }
+        });
+
+        // New: Event listener for deleting fat logs
+        fatLogList.addEventListener('click', async (e) => {
+            const target = e.target.closest('.btn-delete-fat');
+            if (!target) return;
+            
+            const fatLogId = target.dataset.id;
+            
+            // Use new confirm modal
+            showConfirmModal("confirmDeleteFat", "confirmDeleteFat", async () => {
+                try {
+                    await deleteDoc(doc(fatLogCollectionRef, fatLogId));
+                    showToast("fatLogDeleted");
+                } catch (error) {
+                    showToast(t("error") + error.message, true);
+                }
+            });
+        });
+
+        function listenToFatLog() {
+            if (!fatLogCollectionRef) return;
+            const q = query(fatLogCollectionRef, orderBy('date', 'desc'));
+            onSnapshot(q, (snapshot) => {
+                allFatData = []; // Reset cache
+                snapshot.forEach(doc => {
+                    allFatData.push({ id: doc.id, ...doc.data() });
+                });
+                renderFatLogList(allFatData);
+                updateDashboardFat(allFatData);
+                // Update chart with the currently selected filter
+                const activeFilter = document.querySelector('.fat-filter-btn.active');
+                const days = activeFilter ? parseInt(activeFilter.dataset.days) : 7;
+                updateFatChart(days);
+            });
+        }
+
+        function renderFatLogList(logs) {
+            fatLogList.innerHTML = '';
+            if (logs.length === 0) {
+                fatLogList.innerHTML = `<tr><td colspan="3" class="text-center p-6 text-gray-500">${t("noFatLog")}</td></tr>`;
+                return;
+            }
+            logs.forEach(log => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${log.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${log.fatValue.toFixed(1)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button data-id="${log.id}" class="btn-delete-fat px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors" title="${t('delete')}">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                `;
+                fatLogList.appendChild(row);
+            });
+        }
+
+        function updateDashboardFat(logs) {
+            const today = getTodayDateString();
+            const todayLog = logs.find(log => log.date === today);
+            const statTodayFat = document.getElementById('stat-today-fat');
+            
+            if (todayLog) {
+                statTodayFat.textContent = todayLog.fatValue.toFixed(1);
+            } else {
+                statTodayFat.textContent = '--';
+            }
+        }
+
+        function updateFatChart(days) {
+            let filteredLogs = [];
+            if (days > 0) {
+                const cutoffDate = new Date();
+                cutoffDate.setDate(cutoffDate.getDate() - days);
+                const cutoffString = cutoffDate.toISOString().split('T')[0];
+                filteredLogs = allFatData.filter(log => log.date >= cutoffString);
+            } else {
+                filteredLogs = [...allFatData]; // All time
+            }
+
+            // Sort ascending for chart
+            filteredLogs.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            const labels = filteredLogs.map(log => new Date(log.date).toLocaleDateString(currentLanguage === 'mr' ? 'mr-IN' : 'en-IN', { day: '2-digit', month: 'short' }));
+            const data = filteredLogs.map(log => log.fatValue);
+
+            const ctx = document.getElementById('fat-chart').getContext('2d');
+            
+            if (fatChartInstance) {
+                fatChartInstance.destroy();
+            }
+
+            fatChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: t('fatValue'),
+                        data: data,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.1,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#3b82f6'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toFixed(1) // Show one decimal place on Y-axis
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 0,
+                                minRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 10 // Limit ticks on x-axis for readability
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}: ${context.raw.toFixed(1)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function setupChartFilterButtons() {
+            document.querySelectorAll('.fat-filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const days = parseInt(btn.dataset.days);
+                    updateFatChart(days);
+                    
+                    document.querySelectorAll('.fat-filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                });
+            });
+        }
+
+
+        // ===== 16. INITIAL LOAD =====
+        const savedLang = localStorage.getItem('dairyLang') || 'en';
+        setLanguage(savedLang);
+
+    </script>
+</body>
+</html>
+
