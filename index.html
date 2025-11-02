@@ -199,6 +199,89 @@
         body.dark .btn-delete:hover, body.dark .btn-delete-expense:hover, body.dark .btn-delete-fat:hover {
              background-color: #b91c1c; /* red-700 */
         }
+        /* ✨ New: Edit button dark mode */
+        body.dark .btn-edit {
+            background-color: #1e40af; /* blue-800 */
+            color: #bfdbfe; /* blue-200 */
+        }
+        body.dark .btn-edit:hover { background-color: #1d4ed8; /* blue-700 */ }
+
+        /* ✨ New: Chatbot FAB */
+        .chat-fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 30;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            background-color: #6d28d9; /* purple-700 */
+            color: white;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        .chat-fab:hover { background-color: #5b21b6; /* purple-800 */ transform: scale(1.05); }
+        body.dark .chat-fab {
+            background-color: #7e22ce; /* purple-600 */
+        }
+        body.dark .chat-fab:hover {
+            background-color: #9333ea; /* purple-500 */
+        }
+
+        /* ✨ New: Chatbot Modal */
+        #chat-modal-content {
+            width: 90%;
+            max-width: 40rem; /* Wider than other modals */
+            height: 80vh;
+            max-height: 800px;
+            /* display: flex; <-- BUG: Removed this line. This was overriding the default "display: none" from .modal-content */
+            flex-direction: column;
+            overflow: hidden;
+        }
+        /* ✨ FIX: Add new rule to apply 'display: flex' only when 'active' class is added. */
+        /* This is more specific and overrides the default ".modal-content.active { display: block; }" */
+        #chat-modal-content.active {
+            display: flex;
+        }
+
+        #chat-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .chat-message {
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            line-height: 1.5;
+            max-width: 85%;
+            white-space: pre-wrap;
+        }
+        .chat-message-user {
+            background-color: #e0e7ff; /* indigo-100 */
+            color: #1f2937; /* text-gray-800 */
+            margin-left: auto;
+            align-self: flex-end;
+        }
+        .chat-message-gemini {
+            background-color: #f3f4f6; /* gray-100 */
+            color: #1f2937; /* text-gray-800 */
+            margin-right: auto;
+            align-self: flex-start;
+        }
+        body.dark .chat-message-user {
+            background-color: #3730a3; /* indigo-800 */
+            color: #e0e7ff; /* indigo-100 */
+        }
+        body.dark .chat-message-gemini {
+            background-color: #374151; /* gray-700 */
+            color: #f3f4f6; /* gray-100 */
+        }
+        #chat-loading {
+            display: none;
+            padding: 1rem;
+            text-align: center;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -219,6 +302,15 @@
                     <label for="login-password" class="text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="password">Password</label>
                     <input type="password" id="login-password" required class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" data-lang-placeholder="passwordPlaceholder" placeholder="••••••••">
                 </div>
+
+                <!-- ✨ EXTRA FEATURE: Remember Me Checkbox -->
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember-me" name="remember-me" type="checkbox" class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600">
+                        <label for="remember-me" class="ml-2 block text-sm text-gray-900 dark:text-gray-300" data-lang-key="rememberMe">Remember me</label>
+                    </div>
+                </div>
+
                 <button type="submit" class="w-full py-2 font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors" data-lang-key="login">Login</button>
             </form>
             
@@ -253,7 +345,8 @@
         <!-- Sidebar Overlay (Mobile) -->
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden hidden"></div>
 
-        <div class="flex min-h-screen bg-gray-100 dark:bg-gray-900">
+        <!-- ✨ New ID added for Remote Config background control -->
+        <div id="admin-view-wrapper" class="flex min-h-screen bg-gray-100 dark:bg-gray-900">
             <!-- Sidebar Navigation -->
             <nav id="sidebar" class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 bg-white dark:bg-gray-800 shadow-lg transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
                 <div class="flex items-center justify-center p-6 border-b dark:border-gray-700">
@@ -288,7 +381,8 @@
                                 <span class="ml-3 font-medium" data-lang-key="fatLog">Fat Log</span>
                             </a>
                         </li>
-                        <li class="px-6 py-3">
+                        <!-- ✨ Remote Config: Expenses Link Wrapper -->
+                        <li id="nav-expenses-wrapper" class="px-6 py-3">
                             <a href="#expenses" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
                                 <i class="fas fa-money-bill-wave w-6 text-center"></i>
                                 <span class="ml-3 font-medium" data-lang-key="expenses">Kharche (Expenses)</span>
@@ -298,13 +392,6 @@
                             <a href="#settings" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
                                 <i class="fas fa-cog w-6 text-center"></i>
                                 <span class="ml-3 font-medium" data-lang-key="settings">Settings</span>
-                            </a>
-                        </li>
-                        <!-- chatbot -->
-                        <li class="px-6 py-3">
-                            <a href="chatbot.html" target="_blank" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
-                                <i class="fas fa-headset w-6 text-center"></i>
-                                <span class="ml-3 font-medium">Support Chatbot</span>
                             </a>
                         </li>
                     </ul>
@@ -318,8 +405,8 @@
                         <span id="theme-text-dark" data-lang-key="switchToLight" class="hidden">Switch to Light</span>
                     </button>
                 </div>
-                <!-- Language Switcher -->
-                <div class="p-4 border-t dark:border-gray-700">
+                <!-- ✨ Remote Config: Language Switcher Wrapper -->
+                <div id="language-switcher-wrapper" class="p-4 border-t dark:border-gray-700">
                     <div class="flex justify-around mb-3">
                         <button class="lang-btn" data-lang="en">English</button>
                         <button class="lang-btn" data-lang="mr">मराठी</button>
@@ -343,7 +430,8 @@
                     <div></div> <!-- Spacer -->
                 </header>
 
-                <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+                <!-- ✨ Remote Config: Main app background wrapper -->
+                <main id="main-content" class="flex-1 p-4 md:p-8 overflow-y-auto">
                     
                     <!-- ===== Dashboard Page ===== -->
                     <div id="dashboard-page" data-page class="active">
@@ -410,6 +498,21 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- ✨ New: Gemini Summary Buttons Wrapper -->
+                        <div id="gemini-summary-wrapper" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- ✨ New: Gemini Income Summary Button -->
+                            <button id="get-income-summary-btn" class="w-full py-3 px-4 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors">
+                                <i class="fas fa-magic-sparkles mr-2"></i> 
+                                <span data-lang-key="getGeminiIncomeSummary">Get Monthly Income Summary (Gemini)</span>
+                            </button>
+                            <!-- ✨ New: Gemini Expense Summary Button (Moved) -->
+                            <button id="get-expense-summary-btn-dash" class="w-full py-3 px-4 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition-colors">
+                                <i class="fas fa-magic-sparkles mr-2"></i> 
+                                <span data-lang-key="getGeminiSummary">Get Monthly Expense Summary (Gemini)</span>
+                            </button>
+                        </div>
+
 
                         <!-- New Fat Chart -->
                         <div class="mt-8 bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow-md">
@@ -555,11 +658,13 @@
                             </form>
                         </div>
 
-                        <!-- Gemini Summary Button -->
-                        <button id="get-expense-summary-btn" class="mb-6 w-full py-2 px-4 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition-colors">
-                            <i class="fas fa-magic-sparkles mr-2"></i> 
-                            <span data-lang-key="getGeminiSummary">Get Monthly Expense Summary (with Gemini)</span>
-                        </button>
+                        <!-- ✨ Remote Config: Gemini Summary Button Wrapper -->
+                        <div id="gemini-expense-btn-wrapper">
+                            <button id="get-expense-summary-btn" class="mb-6 w-full py-2 px-4 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition-colors">
+                                <i class="fas fa-magic-sparkles mr-2"></i> 
+                                <span data-lang-key="getGeminiSummary">Get Monthly Expense Summary (with Gemini)</span>
+                            </button>
+                        </div>
 
                         <!-- Expense List -->
                         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-x-auto">
@@ -635,12 +740,13 @@
     <div id="summary-modal-backdrop" class="modal-backdrop"></div>
     <div id="summary-modal-content" class="modal-content bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-lg">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold dark:text-gray-100" data-lang-key="geminiSummaryTitle">Gemini Expense Summary</h2>
+            <!-- ✨ New: Dynamic Title for Summary Modal -->
+            <h2 id="summary-modal-title" class="text-xl font-semibold dark:text-gray-100" data-lang-key="geminiSummaryTitle">Gemini Expense Summary</h2>
             <button id="close-summary-btn" class="text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 text-2xl">&times;</button>
         </div>
         <div id="summary-loading" class="text-center p-4">
             <i class="fas fa-spinner fa-spin text-3xl text-blue-500 dark:text-blue-400"></i>
-            <p class="mt-2 text-gray-600 dark:text-gray-300" data-lang-key="geminiLoading">Gemini se summary generate kar rahe hain...</p>
+            <p id="summary-loading-text" class="mt-2 text-gray-600 dark:text-gray-300" data-lang-key="geminiLoading">Gemini se summary generate kar rahe hain...</p>
         </div>
         <div id="summary-result" class="prose max-w-none text-gray-700 dark:text-gray-200" style="display: none;">
             <!-- Gemini response will be injected here -->
@@ -722,6 +828,101 @@
         </div>
     </div>
 
+    <!-- ===== ✨ New: Edit Customer Modal ===== -->
+    <div id="edit-customer-modal-backdrop" class="modal-backdrop"></div>
+    <div id="edit-customer-modal-content" class="modal-content bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-lg">
+        <h2 class="text-xl font-semibold mb-4 dark:text-gray-100" data-lang-key="editCustomer">Edit Customer</h2>
+        <form id="edit-customer-form" class="space-y-4">
+            <input type="hidden" id="edit-customer-id">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="edit-customer-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="name">Name</label>
+                    <input type="text" id="edit-customer-name" class="mt-1 p-2 w-full border rounded-md dark:bg-gray-700 dark:border-gray-600" required>
+                </div>
+                <div>
+                    <label for="edit-customer-phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="phone">Phone</label>
+                    <input type="tel" id="edit-customer-phone" class="mt-1 p-2 w-full border rounded-md dark:bg-gray-700 dark:border-gray-600">
+                </div>
+            </div>
+            
+            <div>
+                <label for="edit-customer-address" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="address">Address</label>
+                <input type="text" id="edit-customer-address" class="mt-1 p-2 w-full border rounded-md dark:bg-gray-700 dark:border-gray-600">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="edit-customer-qty" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="defaultQty">Default Qty</label>
+                    <input type="number" step="0.5" min="0" id="edit-customer-qty" class="mt-1 p-2 w-full border rounded-md dark:bg-gray-700 dark:border-gray-600" required>
+                </div>
+                <div>
+                    <label for="edit-customer-milk-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="milkType">Milk Type</label>
+                    <select id="edit-customer-milk-type" class="mt-1 p-2 w-full border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600">
+                        <option value="cow" data-lang-key="cowMilk">Cow Milk</option>
+                        <option value="buffalo" data-lang-key="buffaloMilk">Buffalo Milk</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="edit-customer-shift" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="shift">Shift</label>
+                    <select id="edit-customer-shift" class="mt-1 p-2 w-full border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600">
+                        <option value="morning" data-lang-key="morningShift">Morning Shift</option>
+                        <option value="evening" data-lang-key="eveningShift">Evening Shift</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" id="cancel-edit-customer-btn" class="py-2 px-4 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 transition-colors" data-lang-key="cancel">Cancel</button>
+                <button type="submit" class="py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors" data-lang-key="saveChanges">Save Changes</button>
+            </div>
+        </form>
+    </div>
+
+
+    <!-- ✨ New: Chatbot FAB (Floating Action Button) -->
+    <div id="chatbot-fab-wrapper" class="hidden">
+        <button id="chatbot-fab-btn" class="chat-fab flex items-center justify-center" title="Chat with Gemini">
+            <i class="fas fa-magic-sparkles text-2xl"></i>
+        </button>
+    </div>
+
+    <!-- ✨ New: Chatbot Modal -->
+    <div id="chat-modal-backdrop" class="modal-backdrop"></div>
+    <div id="chat-modal-content" class="modal-content bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg">
+        <!-- Header -->
+        <div class="flex justify-between items-center p-4 border-b dark:border-gray-700">
+            <h2 class="text-xl font-semibold dark:text-gray-100" data-lang-key="geminiChatbot">Gemini Helper</h2>
+            <button id="close-chat-btn" class="text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 text-2xl">&times;</button>
+        </div>
+        
+        <!-- Chat History -->
+        <div id="chat-history" class="bg-gray-50 dark:bg-gray-900">
+            <!-- Messages will be appended here -->
+             <div class="chat-message chat-message-gemini" data-lang-key="geminiChatWelcome">
+                Hi! I'm your Gemini assistant. How can I help you with the app today?
+             </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="chat-loading" class="p-4 border-t dark:border-gray-700">
+            <div class="flex items-center justify-center">
+                <i class="fas fa-spinner fa-spin text-blue-500 dark:text-blue-400"></i>
+                <span class="ml-2 text-gray-600 dark:text-gray-300" data-lang-key="geminiThinking">Gemini is thinking...</span>
+            </div>
+        </div>
+        
+        <!-- Input Form -->
+        <form id="chat-form" class="p-4 border-t dark:border-gray-700">
+            <div class="flex items-center space-x-2">
+                <input type="text" id="chat-input" class="p-2 w-full border rounded-md dark:bg-gray-700 dark:border-gray-600" data-lang-placeholder="typeYourQuestion" placeholder="Type your question...">
+                <button type="submit" class="py-2 px-4 bg-purple-600 text-white font-semibold rounded-md hover:bg-purple-700 transition-colors">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+
 
     <!-- Global Status Toast -->
     <div id="toast-notification" class="hidden fixed bottom-5 right-5 bg-green-600 text-white py-3 px-5 rounded-lg shadow-xl transition-all duration-300 transform translate-y-10 opacity-0 z-50">
@@ -734,6 +935,8 @@
         // ===== 1. CONFIGURATION =====
 
         // User's Firebase Config
+        // WARNING: Do not expose your API keys in production code.
+        // This config is used because the user provided it.
         const firebaseConfig = {
           apiKey: "AIzaSyCE5FuoOTKLQV9tKf7jsXwS4-YIF3PCAYs",
           authDomain: "ecom-25960.firebaseapp.com",
@@ -746,7 +949,8 @@
         };
 
         // User's Gemini API Key
-        const GEMINI_API_KEY = "AIzaSyBzrprprCI-bInBXLtFCNZ5vh-14cCV0HZM"; // Note: User provided a key with a dash
+        // WARNING: This is a major security risk. API keys should be on a server.
+        const GEMINI_API_KEY = ""; // ✨ FIX: Leave empty for Canvas environment
 
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -755,7 +959,10 @@
             signInWithEmailAndPassword, 
             createUserWithEmailAndPassword, 
             onAuthStateChanged, 
-            signOut
+            signOut,
+            setPersistence, // ✨ EXTRA: Import persistence
+            browserSessionPersistence, // ✨ EXTRA: Import persistence
+            browserLocalPersistence // ✨ EXTRA: Import persistence
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
             getFirestore, 
@@ -775,11 +982,28 @@
             Timestamp,
             collectionGroup // New: For dashboard calculation
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // ✨ New: Remote Config Import
+        import { getRemoteConfig, fetchAndActivate, getBoolean, getString, getValue } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-remote-config.js";
+
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        // ✨ New: Initialize Remote Config
+        const remoteConfig = getRemoteConfig(app);
+        // ✨ New: Remote Config default settings
+        // ✨ FIX: Changed minimumFetchIntervalMillis to 10 seconds for development
+        remoteConfig.settings.minimumFetchIntervalMillis = 10000; // 10 seconds (was 3600000)
+        remoteConfig.defaultConfig = {
+            "show_expenses_manager": true,
+            "show_language_switcher": true,
+            "show_gemini_summary": true,
+            "app_background_color": "#f4f7f6", // Default light gray
+            "app_background_image_url": "", // ✨ New: Background image URL
+            "show_gemini_chatbot": true // ✨ New: Chatbot toggle
+        };
+
 
         // ===== 2. TRANSLATIONS =====
         const translations = {
@@ -790,6 +1014,7 @@
                 email: "Email",
                 password: "Password",
                 login: "Login",
+                rememberMe: "Remember me", // ✨ EXTRA
                 newUser: "New admin?",
                 signupHere: "Signup Here",
                 newAdminAccount: "New Admin Account",
@@ -818,6 +1043,12 @@
                 monthlyPayments: "Payments Received (Month)", // New
                 todayFat: "Today's Fat",
                 fatHistory: "Fat History",
+                getGeminiIncomeSummary: "Get Monthly Income Summary (Gemini)", // New
+                geminiIncomeSummaryTitle: "Gemini Income Summary", // New
+                geminiIncomeLoading: "Generating income summary...", // New
+                geminiNoIncome: "No payments received this month for summary.", // New
+                geminiIncomeSystemPrompt: "You are a helpful diary manager assistant. You are given a list of payments received. Based on this, provide a very short (2-3 line) summary in simple English. State the total income and mention how many payments were received.", // New
+                geminiIncomeUserPrompt: "Here are my payments received this month:\n{data}\n\nPlease provide the summary.", // New
 
                 // Customers Page
                 manageCustomers: "Manage Customers",
@@ -825,58 +1056,76 @@
                 addCustomer: "Add Customer",
                 customerList: "Customer List",
                 name: "Name",
+                milkType: "Milk Type",
+                shift: "Shift",
                 defaultQty: "Default Qty",
                 balanceAmount: "Balance Amount",
                 actions: "Actions",
-                milkType: "Milk Type",
-                shift: "Shift",
+                customerName: "Customer Name",
+                phoneNumber: "Phone Number",
+                address: "Address",
+                defaultMilk: "Default Milk (Liters)",
                 cowMilk: "Cow Milk",
                 buffaloMilk: "Buffalo Milk",
                 morningShift: "Morning Shift",
                 eveningShift: "Evening Shift",
+                payment: "Payment",
+                history: "History",
+                delete: "Delete",
+                phone: "Phone", // New
+                address: "Address", // New
+                details: "Details", // New
+                editCustomer: "Edit Customer", // ✨ New
+                saveChanges: "Save Changes", // ✨ New
+                edit: "Edit", // ✨ New
 
-                // Daily Log Page
+                // Daily Log
                 todayDate: "Today's Date",
-                cowMilkRate: "Cow Milk Rate", // Updated
-                buffaloMilkRate: "Buffalo Milk Rate", // Updated
-                setFromSettings: "Set from Settings",
-                milkDelivered: "Delivered?",
+                cowMilkRate: "Cow Milk Rate",
+                buffaloMilkRate: "Buffalo Milk Rate",
+                setFromSettings: "Set rates from Settings page",
+                milkDelivered: "Milk Delivered?",
                 customer: "Customer",
                 quantityLiters: "Quantity (Liters)",
                 saveTodayLog: "Save Today's Log",
-                confirmLogSaveTitle: "Confirm Daily Log", // New
-                confirmLogSaveText: "Are you sure you want to save today's milk log? This will update customer balances.", // New
 
-                // Fat Log Page
+                // Fat Log
                 manageFatLog: "Manage Fat Log",
                 addFatEntry: "Add New Fat Entry",
-                fatValue: "Fat Value",
+                fatValuePlaceholder: "Fat Value (e.g., 8.7)",
                 addEntry: "Add Entry",
                 fatLogList: "Fat Log List",
+                date: "Date",
+                fatValue: "Fat Value",
                 
-                // Expenses Page
+                // Expenses
                 manageExpenses: "Manage Expenses",
                 addNewExpense: "Add New Expense",
+                expenseDescription: "Expense Description",
+                amountPlaceholder: "Amount (₹)",
                 addExpense: "Add Expense",
                 getGeminiSummary: "Get Monthly Expense Summary (with Gemini)",
                 expenseList: "Expense List",
-                date: "Date",
                 description: "Description",
                 amount: "Amount",
-
-                // Settings Page
-                setMilkRate: "Set Milk Rate",
-                milkRatePerLiter: "Milk Rate (per liter)", // Old, fallback
-                cowMilkRate: "Cow Milk Rate (per liter)", // New
-                buffaloMilkRate: "Buffalo Milk Rate (per liter)", // New
-                saveSettings: "Save Settings",
                 
-                // Payment Modal
+                // Settings
+                setMilkRate: "Set Milk Rates",
+                milkRateExample: "e.g., 50.50",
+                saveSettings: "Save Settings",
+
+                // Modals & Toasts
                 receivePayment: "Receive Payment",
                 currentBalance: "Current Balance",
                 paymentAmount: "Payment Amount (₹)",
                 addPayment: "Add Payment",
-
+                geminiSummaryTitle: "Gemini Expense Summary",
+                geminiLoading: "Generating summary from Gemini...",
+                geminiNoExpenses: "No expenses found for this month to summarize.",
+                geminiError: "Error generating summary: ",
+                geminiSystemPrompt: "You are a helpful diary manager assistant. You are given a list of expenses in 'Taarikh (Date), Vivaran (Description), Raashi (Amount)' format. Based on this, provide a very short (2-3 line) summary in simple English. State the total expenses and maybe point out the biggest expense category if obvious.",
+                geminiUserPrompt: "Here are my expenses for this month:\n{data}\n\nPlease provide the summary.",
+                
                 // History Modal
                 milkHistory: "Milk History",
                 paymentHistory: "Payment History",
@@ -885,58 +1134,54 @@
                 amountPaid: "Amount Paid",
                 present: "Present",
                 absent: "Absent",
-                phone: "Phone", // New
-                address: "Address", // New
-                details: "Details", // New
-
-                // Gemini Modal
-                geminiSummaryTitle: "Gemini Expense Summary",
-                geminiLoading: "Generating summary from Gemini...",
                 
                 // Placeholders
                 emailPlaceholder: "admin@email.com",
                 passwordPlaceholder: "••••••••",
-                customerName: "Customer's Name",
-                phoneNumber: "Phone Number",
-                address: "Address",
-                defaultMilk: "Default Milk (Liters)",
-                fatValuePlaceholder: "e.g., 8.7",
-                expenseDescription: "Expense Description",
-                amountPlaceholder: "Amount (₹)",
-                milkRateExample: "e.g., 50.50",
-                
-                // Dynamic messages
-                payment: "Payment",
-                delete: "Delete",
-                history: "History",
-                noCustomers: "No customers found. Add one above.",
-                noCustomersForLog: "Add customers from the 'Customers' page first.",
-                noExpenses: "No expenses found. Add one above.",
-                noFatLog: "No fat log found. Add one on the 'Fat Log' page.",
-                noMilkHistory: "No milk history found for this customer.",
+
+                // Errors & Success
+                loginError: "Error logging in. Please check email/password.",
+                signupError: "Error signing up.",
+                "auth/invalid-email": "Invalid email address.",
+                "auth/user-not-found": "No admin found with this email.",
+                "auth/wrong-password": "Wrong password.",
+                "auth/email-already-in-use": "This email is already registered.",
+                "auth/weak-password": "Password should be at least 6 characters.",
+                "auth/operation-not-allowed": "Email/Password login is not enabled. Contact developer.",
+                error: "Error: ",
+                settingsSaved: "Settings saved successfully!",
+                customerAdded: "Customer added successfully!",
+                logSaved: "Today's log saved!",
+                paymentAdded: "Payment added successfully!",
+                expenseAdded: "Expense added successfully!",
+                fatEntryAdded: "Fat entry added successfully!", // New
+                nameAndQtyRequired: "Name and Default Qty are required.",
+                allFieldsRequired: "All fields are required.",
+                milkRateRequired: "Please set milk rates in Settings first!",
+                noCustomersForLog: "No customers found. Add customers first.",
+                noExpenses: "No expenses logged yet.",
+                noFatLog: "No fat log entries yet.", // New
+                noMilkHistory: "No milk delivery history found for this customer.",
                 noPaymentHistory: "No payment history found for this customer.",
                 confirmDeleteCustomer: "Are you sure you want to delete this customer? This action cannot be undone.",
                 confirmDeleteExpense: "Are you sure you want to delete this expense?",
                 confirmDeleteFat: "Are you sure you want to delete this fat log entry?", // New
                 customerAdded: "Customer added successfully!",
+                customerUpdated: "Customer details updated!", // ✨ New
                 customerDeleted: "Customer deleted.",
                 expenseDeleted: "Expense deleted.",
                 fatLogDeleted: "Fat log entry deleted.", // New
-                validRate: "Please enter valid rates.", // Updated
-                settingsSaved: "Settings saved!",
-                nameAndQtyRequired: "Name and Default Qty are required.",
-                error: "Error: ",
-                paymentAdded: "Payment added successfully!",
-                validAmount: "Please enter a valid amount.",
-                milkRateRequired: "Please set Cow and Buffalo milk rates in 'Settings' first.", // Updated
-                logSaved: "Today's log saved successfully!",
-                allFieldsRequired: "All fields are required.",
-                expenseAdded: "Expense added successfully!",
-                fatEntryAdded: "Fat entry added successfully!",
-                geminiError: "Error generating summary: ",
-                geminiNoExpenses: "No expenses recorded this month for summary.",
-                geminiSystemPrompt: "You are a helpful diary manager assistant. You are given a list of expenses. Based on this list, provide a very short (2-3 line) summary in simple English. State the total expense and mention the largest expense category.",
-                geminiUserPrompt: "Here are my expenses for this month:\n{data}\n\nPlease provide the summary."
+                confirmLogSaveTitle: "Confirm Log Save",
+                confirmLogSaveText: "Are you sure you want to save today's log? This will update customer balances.",
+
+                // ✨ New: Chatbot
+                geminiChatbot: "Lacto Helper",
+                chatWithGemini: "Chat with Lacto",
+                typeYourQuestion: "Type your question...",
+                send: "Send",
+                geminiChatWelcome: "Hi! I'm Lacto, your assistant. How can I help you with the app today?",
+                geminiThinking: "Lacto is thinking...",
+                geminiChatSystemPrompt: "You are Lacto, a helpful assistant for the 'Doodh Dairy Management' web app. An admin is asking you a question. Answer concisely in simple, friendly English. If the question is about the app, explain how features like 'Dashboard', 'Customers', 'Daily Log', 'Fat Log', 'Expenses', or 'Settings' work. If it's a general question (like 'what is the capital of France'), just answer it.",
             },
             mr: {
                 // Login / General
@@ -944,7 +1189,8 @@
                 dairyManagementSystem: "डेअरी व्यवस्थापन प्रणाली",
                 email: "ईमेल",
                 password: "पासवर्ड",
-                login: "लॉगिन",
+                login: "लॉगिन करा",
+                rememberMe: "मला लक्षात ठेवा", // ✨ EXTRA
                 newUser: "नवीन प्रशासक?",
                 signupHere: "येथे साइन अप करा",
                 newAdminAccount: "नवीन प्रशासक खाते",
@@ -954,15 +1200,15 @@
                 logout: "लॉगआउट",
                 adminId: "प्रशासक आयडी",
                 cancel: "रद्द करा",
-                confirm: "निश्चित करा", // New
-                switchToDark: "डार्क मोड", // New
-                switchToLight: "लाइट मोड", // New
-
+                confirm: "पुष्टी करा", // New
+                switchToDark: "डार्क मोडवर स्विच करा", // New
+                switchToLight: "लाइट मोडवर स्विच करा", // New
+                
                 // Navigation
                 dashboard: "डॅशबोर्ड",
                 customers: "ग्राहक",
-                dailyLog: "दैनंदिन नोंद",
-                fatLog: "फॅट नोंद",
+                dailyLog: "दैनिक नोंद",
+                fatLog: "फॅट लॉग", // New
                 expenses: "खर्च",
                 settings: "सेटिंग्ज",
 
@@ -970,9 +1216,15 @@
                 totalCustomers: "एकूण ग्राहक",
                 totalBalance: "एकूण थकबाकी",
                 monthlyExpenses: "या महिन्याचा खर्च",
-                monthlyPayments: "पेमेंट प्राप्त (महिना)", // New
-                todayFat: "आजचे फॅट",
+                monthlyPayments: "जमा पेमेंट (महिना)", // New
+                todayFat: "आजची फॅट",
                 fatHistory: "फॅट इतिहास",
+                getGeminiIncomeSummary: "मासिक उत्पन्न सारांश मिळवा (Gemini)", // New
+                geminiIncomeSummaryTitle: "Gemini उत्पन्न सारांश", // New
+                geminiIncomeLoading: "उत्पन्न सारांश तयार करत आहे...", // New
+                geminiNoIncome: "सारांशासाठी या महिन्यात कोणतेही पेमेंट प्राप्त झाले नाही.", // New
+                geminiIncomeSystemPrompt: "तुम्ही एक उपयुक्त डेअरी व्यवस्थापक सहाय्यक आहात. तुम्हाला मिळालेल्या पेमेंटची यादी दिली आहे. यावर आधारित, साधा मराठीत एक लहान (२-३ ओळी) सारांश द्या. एकूण उत्पन्न सांगा आणि किती पेमेंट मिळाले याचा उल्लेख करा.", // New
+                geminiIncomeUserPrompt: "या महिन्यात मला मिळालेली पेमेंट खालीलप्रमाणे आहेत:\n{data}\n\nकृपया सारांश द्या.", // New
 
                 // Customers Page
                 manageCustomers: "ग्राहक व्यवस्थापित करा",
@@ -980,58 +1232,76 @@
                 addCustomer: "ग्राहक जोडा",
                 customerList: "ग्राहकांची यादी",
                 name: "नाव",
-                defaultQty: "दूध (Qty)",
-                balanceAmount: "थकबाकी",
-                actions: "कृती",
                 milkType: "दुधाचा प्रकार",
                 shift: "शिफ्ट",
+                defaultQty: "डीफॉल्ट प्रमाण",
+                balanceAmount: "थकबाकी",
+                actions: "कृती",
+                customerName: "ग्राहकाचे नाव",
+                phoneNumber: "फोन नंबर",
+                address: "पत्ता",
+                defaultMilk: "डीफॉल्ट दूध (लिटर)",
                 cowMilk: "गायीचे दूध",
                 buffaloMilk: "म्हशीचे दूध",
                 morningShift: "सकाळची शिफ्ट",
                 eveningShift: "संध्याकाळची शिफ्ट",
-                
-                // Daily Log Page
+                payment: "पेमेंट",
+                history: "इतिहास",
+                delete: "हटवा",
+                phone: "फोन", // New
+                address: "पत्ता", // New
+                details: "तपशील", // New
+                editCustomer: "ग्राहक संपादित करा", // ✨ New
+                saveChanges: "बदल जतन करा", // ✨ New
+                edit: "संपादित करा", // ✨ New
+
+                // Daily Log
                 todayDate: "आजची तारीख",
-                cowMilkRate: "गायीच्या दुधाचा दर", // Updated
-                buffaloMilkRate: "म्हशीच्या दुधाचा दर", // Updated
-                setFromSettings: "सेटिंग्जमधून सेट करा",
+                cowMilkRate: "गायीच्या दुधाचा दर",
+                buffaloMilkRate: "म्हशीच्या दुधाचा दर",
+                setFromSettings: "सेटिंग्जमधून दर सेट करा",
                 milkDelivered: "दूध दिले?",
                 customer: "ग्राहक",
                 quantityLiters: "प्रमाण (लिटर)",
                 saveTodayLog: "आजची नोंद जतन करा",
-                confirmLogSaveTitle: "दैनंदिन नोंद निश्चित करा", // New
-                confirmLogSaveText: "तुम्हाला खात्री आहे की तुम्ही आजची दुधाची नोंद जतन करू इच्छिता? यामुळे ग्राहकांची थकबाकी अपडेट होईल.", // New
 
-                // Fat Log Page
-                manageFatLog: "फॅट नोंद व्यवस्थापित करा",
-                addFatEntry: "नवीन फॅट नोंद करा",
-                fatValue: "फॅट मूल्य",
-                addEntry: "नोंद करा",
-                fatLogList: "फॅट नोंद यादी",
-
-                // Expenses Page
+                // Fat Log
+                manageFatLog: "फॅट लॉग व्यवस्थापित करा",
+                addFatEntry: "नवीन फॅट नोंद जोडा",
+                fatValuePlaceholder: "फॅट व्हॅल्यू (उदा. ८.७)",
+                addEntry: "नोंद जोडा",
+                fatLogList: "फॅट लॉग यादी",
+                date: "तारीख",
+                fatValue: "फॅट व्हॅल्यू",
+                
+                // Expenses
                 manageExpenses: "खर्च व्यवस्थापित करा",
                 addNewExpense: "नवीन खर्च जोडा",
+                expenseDescription: "खर्चाचा तपशील",
+                amountPlaceholder: "रक्कम (₹)",
                 addExpense: "खर्च जोडा",
-                getGeminiSummary: "मासिक खर्चाचा सारांश मिळवा (Gemini सह)",
+                getGeminiSummary: "मासिक खर्चाचा सारांश मिळवा (Gemini)",
                 expenseList: "खर्चाची यादी",
-                date: "तاريخ",
                 description: "तपशील",
                 amount: "रक्कम",
-
-                // Settings Page
-                setMilkRate: "दुधाचा दर सेट करा",
-                milkRatePerLiter: "दुधाचा दर (प्रति लिटर)", // Old, fallback
-                cowMilkRate: "गायीच्या दुधाचा दर (प्रति लिटर)", // New
-                buffaloMilkRate: "म्हशीच्या दुधाचा दर (प्रति लिटर)", // New
+                
+                // Settings
+                setMilkRate: "दुधाचे दर सेट करा",
+                milkRateExample: "उदा. ५०.५०",
                 saveSettings: "सेटिंग्ज जतन करा",
 
-                // Payment Modal
+                // Modals & Toasts
                 receivePayment: "पेमेंट प्राप्त करा",
                 currentBalance: "सध्याची थकबाकी",
                 paymentAmount: "पेमेंट रक्कम (₹)",
                 addPayment: "पेमेंट जोडा",
-
+                geminiSummaryTitle: "Gemini खर्चाचा सारांश",
+                geminiLoading: "Gemini कडून सारांश तयार करत आहे...",
+                geminiNoExpenses: "या महिन्यात सारांश देण्यासाठी कोणताही खर्च आढळला नाही.",
+                geminiError: "सारांश तयार करताना त्रुटी: ",
+                geminiSystemPrompt: "तुम्ही एक उपयुक्त डेअरी व्यवस्थापक सहाय्यक आहात. तुम्हाला 'तारीख, तपशील, रक्कम' स्वरूपात खर्चाची यादी दिली आहे. यावर आधारित, साध्या मराठीत एक लहान (२-३ ओळी) सारांश द्या. एकूण खर्च सांगा आणि स्पष्ट असल्यास सर्वात मोठी खर्चाची श्रेणी सांगा.",
+                geminiUserPrompt: "माझे या महिन्याचे खर्च खालीलप्रमाणे आहेत:\n{data}\n\nकृपया सारांश द्या.",
+                
                 // History Modal
                 milkHistory: "दुधाचा इतिहास",
                 paymentHistory: "पेमेंट इतिहास",
@@ -1040,80 +1310,59 @@
                 amountPaid: "दिलेली रक्कम",
                 present: "हजर",
                 absent: "गैरहजर",
-                phone: "फोन", // New
-                address: "पत्ता", // New
-                details: "तपशील", // New
 
-                // Gemini Modal
-                geminiSummaryTitle: "Gemini खर्चाचा सारांश",
-                geminiLoading: "Gemini कडून सारांश तयार होत आहे...",
-                
                 // Placeholders
                 emailPlaceholder: "admin@email.com",
                 passwordPlaceholder: "••••••••",
-                customerName: "ग्राहकाचे नाव",
-                phoneNumber: "फोन नंबर",
-                address: "पत्ता",
-                defaultMilk: "दूध (लिटर)",
-                fatValuePlaceholder: "उदा. ८.७",
-                expenseDescription: "खर्चाचा तपशील",
-                amountPlaceholder: "रक्कम (₹)",
-                milkRateExample: "उदा. ५०.५०",
-                
-                // Dynamic messages
-                payment: "पेमेंट",
-                delete: "हटवा",
-                history: "इतिहास",
-                noCustomers: "एकही ग्राहक आढळला नाही. वर एक जोडा.",
-                noCustomersForLog: "कृपया आधी 'ग्राहक' पेजवरून ग्राहक जोडा.",
-                noExpenses: "एकही खर्च आढळला नाही. वर एक जोडा.",
-                noFatLog: "फॅट नोंद आढळली नाही. 'फॅट नोंद' पेजवर एक जोडा.",
-                noMilkHistory: "या ग्राहकासाठी दुधाचा इतिहास आढळला नाही.",
+
+                // Errors & Success
+                loginError: "लॉगिन करताना त्रुटी. कृपया ईमेल/पासवर्ड तपासा.",
+                signupError: "साइन अप करताना त्रटी.",
+                "auth/invalid-email": "अवैध ईमेल पत्ता.",
+                "auth/user-not-found": "या ईमेलसह कोणताही प्रशासक आढळला नाही.",
+                "auth/wrong-password": "चुकीचा पासवर्ड.",
+                "auth/email-already-in-use": "हा ईमेल आधीच नोंदणीकृत आहे.",
+                "auth/weak-password": "पासवर्ड किमान ६ अक्षरांचा असावा.",
+                "auth/operation-not-allowed": "ईमेल/पासवर्ड लॉगिन सक्षम केलेले नाही. विकसकाशी संपर्क साधा.",
+                error: "त्रुटी: ",
+                settingsSaved: "सेटिंग्ज यशस्वीरित्या जतन केली!",
+                customerAdded: "ग्राहक यशस्वीरित्या जोडला!",
+                logSaved: "आजची नोंद यशस्वीरित्या जतन केली!",
+                paymentAdded: "पेमेंट यशस्वीरित्या जोडले!",
+                expenseAdded: "खर्च यशस्वीरित्या जोडला!",
+                fatEntryAdded: "फॅट नोंद यशस्वीरित्या जोडली!", // New
+                nameAndQtyRequired: "नाव आणि डीफॉल्ट प्रमाण आवश्यक आहे.",
+                allFieldsRequired: "सर्व फील्ड आवश्यक आहेत.",
+                milkRateRequired: "कृपया प्रथम सेटिंग्जमध्ये दुधाचे दर सेट करा!",
+                noCustomersForLog: "ग्राहक आढळले नाहीत. प्रथम ग्राहक जोडा.",
+                noExpenses: "अद्याप कोणताही खर्च नोंदवला नाही.",
+                noFatLog: "अद्याप फॅट नोंदी नाहीत.", // New
+                noMilkHistory: "या ग्राहकासाठी कोणताही दूध वितरण इतिहास आढळला नाही.",
                 noPaymentHistory: "या ग्राहकासाठी कोणताही पेमेंट इतिहास आढळला नाही.",
                 confirmDeleteCustomer: "तुम्हाला खात्री आहे की तुम्ही या ग्राहकाला हटवू इच्छिता? ही क्रिया पूर्ववत करता येणार नाही.",
                 confirmDeleteExpense: "तुम्हाला खात्री आहे की तुम्ही हा खर्च हटवू इच्छिता?",
                 confirmDeleteFat: "तुम्हाला खात्री आहे की तुम्ही ही फॅट नोंद हटवू इच्छिता?", // New
                 customerAdded: "ग्राहक यशस्वीरित्या जोडला!",
+                customerUpdated: "ग्राहकाचे तपशील अपडेट केले!", // ✨ New
                 customerDeleted: "ग्राहक हटवला.",
                 expenseDeleted: "खर्च हटवला.",
                 fatLogDeleted: "फॅट नोंद हटवली.", // New
-                validRate: "कृपया वैध दर प्रविष्ट करा.", // Updated
-                settingsSaved: "सेटिंग्ज जतन केल्या!",
-                nameAndQtyRequired: "नाव आणि दुधाचे प्रमाण आवश्यक आहे.",
-                error: "त्रुटी: ",
-                paymentAdded: "पेमेंट यशस्वीरित्या जोडले!",
-                validAmount: "कृपया वैध रक्कम प्रविष्ट करा.",
-                milkRateRequired: "कृपया आधी 'सेटिंग्ज' मध्ये गाय आणि म्हशीच्या दुधाचे दर सेट करा.", // Updated
-                logSaved: "आजची नोंद यशस्वीरित्या जतन केली!",
-                allFieldsRequired: "सर्व फील्ड आवश्यक आहेत.",
-                expenseAdded: "खर्च यशस्वीरित्या जोडला!",
-                fatEntryAdded: "फॅट नोंद यशस्वीरित्या जोडली!",
-                geminiError: "सारांश तयार करताना त्रुटी: ",
-                geminiNoExpenses: "सारांशसाठी या महिन्यात कोणताही खर्च नोंदवला नाही.",
-                geminiSystemPrompt: "तुम्ही एक उपयुक्त डेअरी व्यवस्थापक सहाय्यक आहात. तुम्हाला खर्चाची यादी दिली आहे. या यादीच्या आधारे, साधा मराठीत एक छोटा (२-३ ओळींचा) सारांश द्या. एकूण खर्च सांगा आणि सर्वात मोठ्या खर्चाच्या श्रेणीचा उल्लेख करा.",
-                geminiUserPrompt: "हा माझा या महिन्याचा खर्च आहे:\n{data}\n\nकृपया याचा सारांश द्या."
-            }
-        };
+                confirmLogSaveTitle: "नोंद जतन करण्याची पुष्टी करा",
+                confirmLogSaveText: "तुम्हाला खात्री आहे की तुम्ही आजची नोंद जतन करू इच्छिता? यामुळे ग्राहकांची थकबाकी अपडेट होईल.",
 
-        // Global state
-        let currentLanguage = 'en';
-        let currentAdmin = null;
-        let currentAdminId = null;
-        let milkPriceCow = 0; // Updated
-        let milkPriceBuffalo = 0; // Updated
-        let customerCollectionRef = null;
-        let expenseCollectionRef = null;
-        let fatLogCollectionRef = null;
-        let settingsDocRef = null;
-        let milkLogUnsubscriber = null;
-        let paymentLogUnsubscriber = null;
-        let fatChartInstance = null;
-        let allFatData = [];
-        let allCustomers = []; // Cache for customers
-        let confirmCallback = null; // New for confirm modal
+                // ✨ New: Chatbot
+                geminiChatbot: "Lacto मदतनीस",
+                chatWithGemini: "Lacto शी चॅट करा",
+                typeYourQuestion: " तुमचा प्रश्न टाइप करा...",
+                send: "पाठवा",
+                geminiChatWelcome: "नमस्कार! मी Lacto, तुमचा सहाय्यक. मी आज अॅपमध्ये तुमची कशी मदत करू शकेन?",
+                geminiThinking: "Lacto विचार करत आहे...",
+                geminiChatSystemPrompt: "तुम्ही Lacto आहात, 'Doodh Dairy Management' वेब अॅपसाठी एक उपयुक्त सहाय्यक. एक प्रशासक तुम्हाला प्रश्न विचारत आहे. सोप्या, मैत्रीपूर्ण मराठीत थोडक्यात उत्तरे द्या. जर प्रश्न अॅपबद्दल असेल (उदा. 'ग्राहक कसे जोडावे?'), तर 'डॅशबोर्ड', 'ग्राहक', 'दैनिक नोंद', 'फॅट लॉग', 'खर्च', किंवा 'सेटिंग्ज' सारखी वैशिष्ट्ये कशी कार्य करतात हे स्पष्ट करा. जर तो सामान्य प्रश्न असेल (उदा. 'भारताची राजधानी कोणती?'), तर फक्त त्याचे उत्तर द्या.",
+            } // 'mr' object ends here
+        }; // 'translations' object ends here
 
-
-        // DOM Elements
+        // ===== 3. DOM ELEMENT REFERENCES (Moved from various places) =====
+        // Login/Signup
         const loginView = document.getElementById('login-view');
         const adminView = document.getElementById('admin-view');
         const loginForm = document.getElementById('login-form');
@@ -1121,32 +1370,51 @@
         const showSignupBtn = document.getElementById('show-signup-btn');
         const showLoginBtn = document.getElementById('show-login-btn');
         const authError = document.getElementById('auth-error');
-        const logoutBtn = document.getElementById('logout-btn');
-        const navLinks = document.querySelectorAll('.nav-link');
-        const pages = document.querySelectorAll('[data-page]');
-        const adminUserIdElement = document.getElementById('admin-user-id');
-        const toast = document.getElementById('toast-notification');
-        const toastMessage = document.getElementById('toast-message');
-        const langButtons = document.querySelectorAll('.lang-btn');
+        const rememberMe = document.getElementById('remember-me');
 
-        // Mobile Menu DOMs
-        const menuToggleBtn = document.getElementById('menu-toggle-btn');
+        // Sidebar/Nav
         const sidebar = document.getElementById('sidebar');
         const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const menuToggleBtn = document.getElementById('menu-toggle-btn');
+        const navLinks = document.querySelectorAll('.nav-link');
+        const pages = document.querySelectorAll('[data-page]');
+        const adminUserId = document.getElementById('admin-user-id');
+        const logoutBtn = document.getElementById('logout-btn');
+        const langBtns = document.querySelectorAll('.lang-btn');
 
-        // Payment Modal Elements
+        // Dashboard
+        const statTotalCustomers = document.getElementById('stat-total-customers');
+        const statTotalBalance = document.getElementById('stat-total-balance');
+        const statTotalExpenses = document.getElementById('stat-total-expenses');
+        const statTotalPayments = document.getElementById('stat-total-payments');
+        const getIncomeSummaryBtn = document.getElementById('get-income-summary-btn');
+        const getExpenseSummaryBtnDash = document.getElementById('get-expense-summary-btn-dash');
+
+        // Customers
+        const addCustomerForm = document.getElementById('add-customer-form');
+        const customerList = document.getElementById('customer-list');
+        
+        // Settings
+        const settingsForm = document.getElementById('settings-form');
+        const milkPriceCowInput = document.getElementById('milk-price-cow');
+        const milkPriceBuffaloInput = document.getElementById('milk-price-buffalo');
+
+        // Payment Modal
         const paymentModalBackdrop = document.getElementById('payment-modal-backdrop');
         const paymentModalContent = document.getElementById('payment-modal-content');
         const paymentForm = document.getElementById('payment-form');
         const cancelPaymentBtn = document.getElementById('cancel-payment-btn');
-
-        // Gemini Summary Modal Elements
+        
+        // Gemini Modal
         const summaryModalBackdrop = document.getElementById('summary-modal-backdrop');
         const summaryModalContent = document.getElementById('summary-modal-content');
+        const summaryModalTitle = document.getElementById('summary-modal-title');
         const closeSummaryBtn = document.getElementById('close-summary-btn');
         const summaryLoading = document.getElementById('summary-loading');
         const summaryResult = document.getElementById('summary-result');
         const getExpenseSummaryBtn = document.getElementById('get-expense-summary-btn');
+        const summaryLoadingText = document.getElementById('summary-loading-text');
+
 
         // History Modal Elements
         const historyModalBackdrop = document.getElementById('history-modal-backdrop');
@@ -1154,12 +1422,15 @@
         const closeHistoryBtn = document.getElementById('close-history-btn');
         const historyCustomerName = document.getElementById('history-customer-name');
         const historyCustomerInfo = document.getElementById('history-customer-info');
-        const milkHistoryList = document.getElementById('milk-history-list');
-        const paymentHistoryList = document.getElementById('payment-history-list');
-        const noMilkHistory = document.getElementById('no-milk-history');
-        const noPaymentHistory = document.getElementById('no-payment-history');
         const tabButtons = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
+        const milkHistoryList = document.getElementById('milk-history-list');
+        const noMilkHistory = document.getElementById('no-milk-history');
+        const paymentHistoryList = document.getElementById('payment-history-list');
+        const noPaymentHistory = document.getElementById('no-payment-history');
+        // Unsubscriber variables for history modal listeners
+        let milkLogUnsubscriber = null;
+        let paymentLogUnsubscriber = null;
 
         // Custom Confirm Modal (New)
         const confirmModalBackdrop = document.getElementById('confirm-modal-backdrop');
@@ -1169,6 +1440,12 @@
         const confirmModalCancel = document.getElementById('confirm-modal-cancel');
         const confirmModalConfirm = document.getElementById('confirm-modal-confirm');
         
+        // ✨ New: Edit Customer Modal Elements
+        const editCustomerModalBackdrop = document.getElementById('edit-customer-modal-backdrop');
+        const editCustomerModalContent = document.getElementById('edit-customer-modal-content');
+        const editCustomerForm = document.getElementById('edit-customer-form');
+        const cancelEditCustomerBtn = document.getElementById('cancel-edit-customer-btn');
+
         // ✨ New: Theme Toggle Elements
         const themeToggleBtn = document.getElementById('theme-toggle');
         const sunIcon = document.getElementById('theme-icon-sun');
@@ -1177,58 +1454,85 @@
         const themeTextDark = document.getElementById('theme-text-dark');
 
 
+        // ✨ New: Chatbot DOM Elements
+        const chatbotFabWrapper = document.getElementById('chatbot-fab-wrapper');
+        const chatbotFabBtn = document.getElementById('chatbot-fab-btn');
+        const chatModalBackdrop = document.getElementById('chat-modal-backdrop');
+        const chatModalContent = document.getElementById('chat-modal-content');
+        const closeChatBtn = document.getElementById('close-chat-btn');
+        const chatHistory = document.getElementById('chat-history');
+        const chatForm = document.getElementById('chat-form');
+        const chatInput = document.getElementById('chat-input');
+        const chatLoading = document.getElementById('chat-loading');
+
+
         // ===== 3. LANGUAGE & HELPER FUNCTIONS =====
+        let currentLanguage = 'en'; // Default language
+        
+        // Global state
+        let currentAdminId = null;
+        let milkPriceCow = 0;
+        let milkPriceBuffalo = 0;
+        let allFatData = []; // Cache for chart
+        let fatChartInstance = null;
+        
+        // Global Firestore references
+        let adminDocRef = null;
+        let customerCollectionRef = null;
+        let expenseCollectionRef = null;
+        let fatLogCollectionRef = null;
 
         function t(key) {
             return translations[currentLanguage][key] || key;
         }
 
         function setLanguage(lang) {
-            if (!translations[lang]) return;
             currentLanguage = lang;
-            localStorage.setItem('dairyLang', lang); 
+            localStorage.setItem('dairyLang', lang); // Save preference
+            
+            // Set <html> lang attribute
+            document.documentElement.lang = lang === 'mr' ? 'mr' : 'en';
 
-            langButtons.forEach(btn => {
+            // Update all elements with data-lang-key
+            document.querySelectorAll('[data-lang-key]').forEach(el => {
+                const key = el.dataset.langKey;
+                el.textContent = t(key);
+            });
+            
+            // Update all elements with data-lang-placeholder
+            document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
+                const key = el.dataset.langPlaceholder;
+                el.placeholder = t(key);
+            });
+            
+            // Update language buttons state
+            langBtns.forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.lang === lang);
             });
 
-            document.querySelectorAll('[data-lang-key]').forEach(el => {
-                const key = el.dataset.langKey;
-                if (translations[lang][key]) {
-                    el.textContent = translations[lang][key];
-                }
-            });
-
-            document.querySelectorAll('[data-lang-placeholder]').forEach(el => {
-                const key = el.dataset.langPlaceholder;
-                if (translations[lang][key]) {
-                    el.placeholder = translations[lang][key];
-                }
-            });
-            
-            // ✨ Update theme toggle button text based on language
-            updateThemeButtonText();
-
-            if (currentAdminId) {
-                // Re-render lists to apply translations
-                listenToCustomers();
-                listenToExpenses();
-                listenToFatLog();
-                // Update today's date format
-                document.getElementById('today-date').textContent = new Date().toLocaleDateString(currentLanguage === 'mr' ? 'mr-IN' : 'en-IN');
-            }
+            // Update today's date format
+            document.getElementById('today-date').textContent = new Date().toLocaleDateString(currentLanguage === 'mr' ? 'mr-IN' : 'en-IN');
         }
 
-        langButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                setLanguage(btn.dataset.lang);
-            });
+        langBtns.forEach(btn => {
+            btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
         });
 
-        function showToast(messageKey, isError = false) {
-            toastMessage.textContent = t(messageKey); 
-            toast.classList.toggle('bg-green-600', !isError);
-            toast.classList.toggle('bg-red-600', isError);
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast-notification');
+            const toastMessage = document.getElementById('toast-message');
+            
+            // Use translated message
+            toastMessage.textContent = t(message); 
+            
+            if (isError) {
+                toast.classList.remove('bg-green-600');
+                toast.classList.add('bg-red-600');
+            } else {
+                toast.classList.remove('bg-red-600');
+                toast.classList.add('bg-green-600');
+            }
+            
             toast.classList.remove('hidden', 'translate-y-10', 'opacity-0');
             
             setTimeout(() => {
@@ -1251,22 +1555,33 @@
             const day = String(today.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
-
-        // New: Custom Confirm Modal Functions
+        
+        // New: Custom Confirm Modal
+        let confirmCallback = null;
         function showConfirmModal(titleKey, bodyKey, onConfirm) {
             confirmModalTitle.textContent = t(titleKey);
             confirmModalBody.textContent = t(bodyKey);
             confirmCallback = onConfirm;
+            
+            // Set button color based on action (e.g., delete)
+            if (titleKey.includes('Delete')) {
+                confirmModalConfirm.classList.remove('bg-green-600', 'hover:bg-green-700');
+                confirmModalConfirm.classList.add('bg-red-600', 'hover:bg-red-700');
+            } else {
+                confirmModalConfirm.classList.remove('bg-red-600', 'hover:bg-red-700');
+                confirmModalConfirm.classList.add('bg-green-600', 'hover:bg-green-700');
+            }
+            
             confirmModalBackdrop.classList.add('active');
             confirmModalContent.classList.add('active');
         }
-
+        
         function closeConfirmModal() {
             confirmModalBackdrop.classList.remove('active');
             confirmModalContent.classList.remove('active');
             confirmCallback = null;
         }
-
+        
         confirmModalCancel.addEventListener('click', closeConfirmModal);
         confirmModalBackdrop.addEventListener('click', closeConfirmModal);
         confirmModalConfirm.addEventListener('click', () => {
@@ -1276,290 +1591,331 @@
             closeConfirmModal();
         });
 
-        
-        // ===== 4. AUTHENTICATION =====
-        
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentAdmin = user;
-                currentAdminId = user.uid;
-                
-                // THIS IS YOUR V1 DATABASE LOGIC
-                const adminDataPath = `dairyAdmins/${currentAdminId}`;
-                customerCollectionRef = collection(db, adminDataPath, 'customers');
-                expenseCollectionRef = collection(db, adminDataPath, 'expenses');
-                fatLogCollectionRef = collection(db, adminDataPath, 'fatLog');
-                settingsDocRef = doc(db, adminDataPath, 'settings', 'main');
 
-                // New: Log admin activity
-                const adminActivityDoc = doc(db, 'adminActivity', currentAdminId);
-                setDoc(adminActivityDoc, {
-                    email: user.email,
-                    lastLogin: Timestamp.now()
-                }, { merge: true });
+        // ✨ New: Apply Remote Config (Updated Logic)
+        function applyRemoteConfig() {
+            // Get boolean values
+            const showExpenses = getBoolean(remoteConfig, "show_expenses_manager");
+            const showLanguage = getBoolean(remoteConfig, "show_language_switcher");
+            const showGemini = getBoolean(remoteConfig, "show_gemini_summary");
+            const showChatbot = getBoolean(remoteConfig, "show_gemini_chatbot"); // ✨ New
 
+            // Get string values
+            const bgColor = getString(remoteConfig, "app_background_color");
+            const bgImageUrl = getString(remoteConfig, "app_background_image_url"); // ✨ New
 
-                loginView.style.display = 'none';
-                adminView.style.display = 'block';
-                adminUserIdElement.textContent = currentAdminId;
-                
-                initAppLogic(); 
-            } else {
-                currentAdmin = null;
-                currentAdminId = null;
-                loginView.style.display = 'flex';
-                adminView.style.display = 'none';
+            // ✨ FIX: Add console.logs to show fetched values
+            console.log("Applying Remote Config values...");
+            console.log(`- show_expenses_manager: ${showExpenses}`);
+            console.log(`- show_language_switcher: ${showLanguage}`);
+            console.log(`- show_gemini_summary: ${showGemini}`);
+            console.log(`- app_background_color: ${bgColor}`);
+            console.log(`- app_background_image_url: ${bgImageUrl}`); // ✨ New
+            console.log(`- show_gemini_chatbot: ${showChatbot}`); // ✨ New
+
+            // Apply to UI
+            document.getElementById('nav-expenses-wrapper').style.display = showExpenses ? 'block' : 'none';
+            document.getElementById('language-switcher-wrapper').style.display = showLanguage ? 'block' : 'none';
+            document.getElementById('gemini-summary-wrapper').style.display = showGemini ? 'grid' : 'none';
+            document.getElementById('gemini-expense-btn-wrapper').style.display = showGemini ? 'block' : 'none';
+            document.getElementById('chatbot-fab-wrapper').style.display = showChatbot ? 'block' : 'none'; // ✨ New
+
+            // ✨ New: Apply background to "Whole App" (Login View + Admin View Wrapper)
+            const loginViewEl = document.getElementById('login-view');
+            const adminViewWrapper = document.getElementById('admin-view-wrapper');
+            const mainContent = document.getElementById('main-content'); // Get this to *remove* old logic
+
+            // Reset old logic from main-content
+            if (mainContent) {
+                mainContent.style.backgroundColor = '';
             }
-            // Load language on auth change (for login page too)
-            const savedLang = localStorage.getItem('dairyLang') || 'en';
-            setLanguage(savedLang);
-            // ✨ New: Apply saved theme
-            applyTheme(localStorage.getItem('dairyTheme') === 'dark');
-        });
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-            authError.textContent = '';
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                authError.textContent = `Login failed: ${error.message}`;
-            }
-        });
+            const containers = [loginViewEl, adminViewWrapper].filter(Boolean); // Get valid containers
 
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-            authError.textContent = '';
-            try {
-                await createUserWithEmailAndPassword(auth, email, password);
-            } catch (error) {
-                authError.textContent = `Signup failed: ${error.message}`;
-            }
-        });
-
-        logoutBtn.addEventListener('click', async () => {
-            await signOut(auth);
-        });
-
-        showSignupBtn.addEventListener('click', () => {
-            loginForm.classList.add('hidden');
-            signupForm.classList.remove('hidden');
-            authError.textContent = '';
-        });
-        showLoginBtn.addEventListener('click', () => {
-            loginForm.classList.remove('hidden');
-            signupForm.classList.add('hidden');
-            authError.textContent = '';
-        });
-
-        // ===== 5. NAVIGATION & MOBILE UI =====
-        
-        // Mobile sidebar toggle
-        menuToggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('-translate-x-full');
-            sidebarOverlay.classList.toggle('hidden');
-        });
-        sidebarOverlay.addEventListener('click', () => {
-            sidebar.classList.add('-translate-x-full');
-            sidebarOverlay.classList.add('hidden');
-        });
-
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetId = link.getAttribute('href').substring(1); 
-                
-                navLinks.forEach(nav => nav.classList.remove('bg-gray-100', 'text-blue-600', 'dark:bg-gray-700', 'dark:text-white'));
-                link.classList.add('bg-gray-100', 'text-blue-600', 'dark:bg-gray-700', 'dark:text-white');
-                
-                pages.forEach(page => {
-                    page.classList.toggle('active', page.id === `${targetId}-page`);
+            if (bgImageUrl && bgImageUrl.trim() !== "") {
+                // Image URL is present, use it
+                const bgStyle = `url('${bgImageUrl}') no-repeat center center fixed`;
+                containers.forEach(container => {
+                    container.style.background = bgStyle;
+                    container.style.backgroundSize = 'cover';
                 });
-
-                // New: Set fat date when navigating to fat-log
-                if (targetId === 'fat-log') {
-                    document.getElementById('fat-date').value = getTodayDateString();
-                }
-
-                // Close sidebar on mobile after navigation
-                if (window.innerWidth < 768) { // md breakpoint
-                    sidebar.classList.add('-translate-x-full');
-                    sidebarOverlay.classList.add('hidden');
-                }
-            });
-        });
-        
-        // ===== 5.1 THEME TOGGLE LOGIC =====
-        function updateThemeButtonText() {
-            const isDark = document.documentElement.classList.contains('dark');
-            if (isDark) {
-                themeTextLight.classList.add('hidden');
-                themeTextDark.classList.remove('hidden');
-                themeTextDark.textContent = t('switchToLight');
+            } else if (bgColor && bgColor.trim() !== "") {
+                // No image, but color is present
+                containers.forEach(container => {
+                    container.style.background = bgColor; // Set color
+                    container.style.backgroundSize = ''; // Unset size
+                });
             } else {
-                themeTextLight.classList.remove('hidden');
-                themeTextDark.classList.add('hidden');
-                themeTextLight.textContent = t('switchToDark');
+                // No image or color, reset to CSS defaults
+                containers.forEach(container => {
+                    container.style.background = ''; // Resets to CSS
+                    container.style.backgroundSize = '';
+                });
             }
         }
 
-        function applyTheme(isDark) {
-            if (isDark) {
-                document.documentElement.classList.add('dark');
-                document.body.classList.add('dark');
-                sunIcon.classList.remove('hidden');
-                moonIcon.classList.add('hidden');
+
+        function initAppLogic() {
+            // Fetch and apply Remote Config first
+            fetchAndActivate(remoteConfig)
+                .then(() => {
+                    applyRemoteConfig();
+                    console.log("Remote Config fetched and activated.");
+                })
+                .catch((err) => {
+                    console.error('Remote Config fetch failed', err);
+                    applyRemoteConfig(); // Apply defaults even if fetch fails
+                })
+                .finally(() => {
+                    // Start listening to data AFTER config is applied
+                    listenToSettings();
+                    listenToCustomers();
+                    listenToExpenses();
+                    listenToFatLog();
+                    loadDashboardStats(); 
+                    document.getElementById('today-date').textContent = new Date().toLocaleDateString(currentLanguage === 'mr' ? 'mr-IN' : 'en-IN');
+                    document.getElementById('fat-date').value = getTodayDateString(); // Set fat date on init
+                    setLanguage(localStorage.getItem('dairyLang') || 'en');
+                    setupChartFilterButtons();
+                    setupEditCustomerModal(); // ✨ New: Setup edit modal listeners
+                    setupChatbot(); // ✨ New: Setup chatbot listeners
+                });
+        }
+        
+
+        // ===== 4. AUTHENTICATION =====
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                currentAdminId = user.uid;
+                adminUserId.textContent = user.uid;
+                
+                // Initialize Firestore references
+                adminDocRef = doc(db, 'dairyAdmins', currentAdminId);
+                customerCollectionRef = collection(db, adminDocRef.path, 'customers');
+                expenseCollectionRef = collection(db, adminDocRef.path, 'expenses');
+                fatLogCollectionRef = collection(db, adminDocRef.path, 'fatLog'); // New
+                
+                // Show admin view, hide login view
+                adminView.classList.remove('hidden');
+                loginView.classList.add('hidden');
+                
+                // Start the app logic
+                initAppLogic();
+                
             } else {
-                document.documentElement.classList.remove('dark');
-                document.body.classList.remove('dark');
-                sunIcon.classList.add('hidden');
-                moonIcon.classList.remove('hidden');
+                // User is signed out
+                currentAdminId = null;
+                // Show login view, hide admin view
+                loginView.classList.remove('hidden');
+                adminView.classList.add('hidden');
+
+                // Clear any sensitive data if needed (e.g., clear lists)
+                customerList.innerHTML = '';
+                expenseList.innerHTML = '';
+                dailyLogList.innerHTML = '';
+                fatLogList.innerHTML = '';
             }
-            updateThemeButtonText();
-            // Update chart colors if chart exists
+        });
+
+        // ✨ New: Theme Toggle Logic
+        function initTheme() {
+            const isDark = localStorage.getItem('dairyTheme') === 'dark';
+            document.documentElement.classList.toggle('dark', isDark);
+            updateThemeButton(isDark);
+        }
+        function updateThemeButton(isDark) {
+            sunIcon.classList.toggle('hidden', !isDark);
+            moonIcon.classList.toggle('hidden', isDark);
+            themeTextLight.classList.toggle('hidden', isDark);
+            themeTextDark.classList.toggle('hidden', !isDark);
+            // Update chart if it exists
             if (fatChartInstance) {
                 const activeFilter = document.querySelector('.fat-filter-btn.active');
                 const days = activeFilter ? parseInt(activeFilter.dataset.days) : 7;
-                updateFatChart(days); // Redraw chart with new colors
+                updateFatChart(days);
             }
         }
-
         themeToggleBtn.addEventListener('click', () => {
-            const isDark = !document.documentElement.classList.contains('dark');
+            const isDark = document.documentElement.classList.toggle('dark');
             localStorage.setItem('dairyTheme', isDark ? 'dark' : 'light');
-            applyTheme(isDark);
+            updateThemeButton(isDark);
         });
-
-
-        // ===== 6. APP INITIALIZATION =====
-        function initAppLogic() {
-            if (!currentAdminId) return;
-            document.querySelector('.nav-link[href="#dashboard"]').click();
-            listenToSettings();
-            listenToCustomers();
-            listenToExpenses();
-            listenToFatLog();
-            loadDashboardStats(); 
-            document.getElementById('today-date').textContent = new Date().toLocaleDateString(currentLanguage === 'mr' ? 'mr-IN' : 'en-IN');
-            document.getElementById('fat-date').value = getTodayDateString(); // Set fat date on init
-            setLanguage(localStorage.getItem('dairyLang') || 'en');
-            setupChartFilterButtons();
-        }
+        initTheme(); // Apply theme on load
         
-        // ===== 7. DASHBOARD =====
-        async function loadDashboardStats() {
-            const totalCustomersEl = document.getElementById('stat-total-customers');
-            const totalBalanceEl = document.getElementById('stat-total-balance');
-            const totalExpensesEl = document.getElementById('stat-total-expenses');
-            const totalPaymentsEl = document.getElementById('stat-total-payments'); // New
-            
-            if (customerCollectionRef) {
-                onSnapshot(customerCollectionRef, (snapshot) => {
-                    const count = snapshot.size;
-                    let totalBalance = 0;
-                    snapshot.forEach(doc => {
-                        totalBalance += doc.data().currentBalance || 0;
-                    });
-                    totalCustomersEl.textContent = count;
-                    totalBalanceEl.textContent = formatCurrency(totalBalance);
-                });
-            }
-            
-            const today = new Date();
-            const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-            const firstDayOfMonthString = getTodayDateString().substring(0, 8) + '01'; // YYYY-MM-01
 
-            // Monthly Expenses
-            if (expenseCollectionRef) {
-                onSnapshot(expenseCollectionRef, (snapshot) => {
-                    let totalExpenses = 0;
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        if (data.date && data.date >= firstDayOfMonthString) {
-                            totalExpenses += data.amount || 0;
+        // ===== 5. NAVIGATION =====
+        function setupNavigation() {
+            // Mobile menu toggle
+            menuToggleBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('-translate-x-full');
+                sidebarOverlay.classList.toggle('hidden');
+            });
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+            });
+            
+            // Page navigation
+            function showPage(hash) {
+                const pageId = (hash || '#dashboard').substring(1) + '-page';
+                
+                pages.forEach(page => {
+                    page.classList.toggle('active', page.id === pageId);
+                });
+                
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href') === hash);
+                });
+                
+                // Close mobile sidebar on nav click
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+                
+                // Update header title (if needed, or just keep it static)
+            }
+
+            // Handle nav link clicks
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const hash = new URL(link.href).hash;
+                    window.location.hash = hash; // This triggers 'hashchange'
+                });
+            });
+
+            // Handle hash changes (page loads, back button)
+            window.addEventListener('hashchange', () => showPage(window.location.hash));
+            // Show initial page
+            showPage(window.location.hash || '#dashboard');
+        }
+        setupNavigation();
+
+
+        // ===== 6. DASHBOARD =====
+        async function loadDashboardStats() {
+            if (!adminDocRef || !customerCollectionRef || !expenseCollectionRef) return;
+            
+            // 1. Total Customers
+            const customersSnapshot = await getDocs(customerCollectionRef);
+            statTotalCustomers.textContent = customersSnapshot.size;
+            
+            // 2. Total Balance
+            let totalBalance = 0;
+            customersSnapshot.forEach(doc => {
+                totalBalance += doc.data().currentBalance || 0;
+            });
+            statTotalBalance.textContent = formatCurrency(totalBalance);
+            
+            // 3. This Month's Expenses
+            const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+            const firstDayOfMonthString = getTodayDateString().substring(0, 8) + '01'; // YYYY-MM-01
+            
+            // ✨ FIX: Remove orderBy, filter in JS
+            const expenses = [];
+            const q = query(expenseCollectionRef);
+            const querySnapshot = await getDocs(q);
+
+            querySnapshot.forEach(doc => {
+                expenses.push(doc.data());
+            });
+
+            const thisMonthExpenses = expenses.filter(ex => ex.date >= firstDayOfMonthString);
+            
+            let totalExpenses = 0;
+            thisMonthExpenses.forEach(ex => {
+                totalExpenses += ex.amount;
+            });
+            statTotalExpenses.textContent = formatCurrency(totalExpenses);
+
+            // 4. This Month's Payments (New)
+            let totalPayments = 0;
+            // Use collectionGroup query to find all 'paymentLog' entries for this admin
+            // NOTE: This requires a Firestore index.
+            try {
+                const paymentLogsQuery = query(collectionGroup(db, 'paymentLog'));
+                // Cannot query collectionGroup with adminId directly without composite index.
+                // We must iterate over customers instead.
+                
+                for (const customerDoc of customersSnapshot.docs) {
+                    const paymentLogCol = collection(db, customerDoc.ref.path, 'paymentLog');
+                    // ✨ FIX: Remove orderBy
+                    const paymentQuery = query(paymentLogCol);
+                    const paymentSnapshot = await getDocs(paymentQuery);
+                    
+                    paymentSnapshot.forEach(paymentDoc => {
+                        const payment = paymentDoc.data();
+                        // Filter for this month in JS
+                        if (payment.date && new Date(payment.date) >= firstDayOfMonth) {
+                            totalPayments += payment.amount;
                         }
                     });
-                    totalExpensesEl.textContent = formatCurrency(totalExpenses);
-                });
-            }
-
-            // New: Monthly Payments Received
-            // This is a heavy query, run it once on load and then listen for new payments
-            // For simplicity, we'll listen to all paymentLogs.
-            // This will only work if the user has a small number of customers.
-            // For a larger app, this calculation should be done server-side.
-            if (currentAdminId) {
-                // This query requires a composite index on (adminId, date) for 'paymentLog'
-                // Since user's V1 used sub-collections, we must iterate.
-                
-                try {
-                    let totalPayments = 0;
-                    const customerSnapshot = await getDocs(customerCollectionRef);
-                    for (const customerDoc of customerSnapshot.docs) {
-                        const paymentLogCol = collection(db, customerDoc.ref.path, 'paymentLog');
-                        const paymentSnapshot = await getDocs(paymentLogCol);
-                        paymentSnapshot.forEach(paymentDoc => {
-                            const payment = paymentDoc.data();
-                            if (payment.date && payment.date >= firstDayOfMonthString) {
-                                totalPayments += payment.amount || 0;
-                            }
-                        });
-                    }
-                    totalPaymentsEl.textContent = formatCurrency(totalPayments);
-                    
-                } catch (e) {
-                    console.error("Error fetching monthly payments: ", e);
-                    totalPaymentsEl.textContent = "Error";
                 }
+                statTotalPayments.textContent = formatCurrency(totalPayments);
+                
+            } catch (error) {
+                 console.error("Error calculating total payments (this may be an index issue):", error.message);
+                 statTotalPayments.textContent = "Error";
             }
         }
 
-        // ===== 8. SETTINGS =====
-        const settingsForm = document.getElementById('settings-form');
-        const cowMilkPriceInput = document.getElementById('milk-price-cow'); // Updated
-        const buffaloMilkPriceInput = document.getElementById('milk-price-buffalo'); // Updated
-        
+        // ===== 7. SETTINGS =====
         function listenToSettings() {
-            if (!settingsDocRef) return;
-            onSnapshot(settingsDocRef, (doc) => {
+            if (!adminDocRef) return;
+            onSnapshot(adminDocRef, (doc) => {
                 if (doc.exists()) {
-                    const data = doc.data();
-                    milkPriceCow = data.milkPriceCow || 0;
-                    milkPriceBuffalo = data.milkPriceBuffalo || 0;
-                    cowMilkPriceInput.value = milkPriceCow;
-                    buffaloMilkPriceInput.value = milkPriceBuffalo;
+                    const settings = doc.data();
+                    milkPriceCow = settings.milkPriceCow || 0;
+                    milkPriceBuffalo = settings.milkPriceBuffalo || 0;
+                    
+                    // Update settings page
+                    milkPriceCowInput.value = milkPriceCow;
+                    milkPriceBuffaloInput.value = milkPriceBuffalo;
+                    
+                    // Update daily log page
                     document.getElementById('log-cow-milk-price').textContent = `${formatCurrency(milkPriceCow)}/L`;
                     document.getElementById('log-buffalo-milk-price').textContent = `${formatCurrency(milkPriceBuffalo)}/L`;
                 } else {
-                    setDoc(settingsDocRef, { milkPriceCow: 0, milkPriceBuffalo: 0 });
+                    console.log("No settings doc, creating one.");
+                    // Optional: Create a default settings doc if it doesn't exist
+                    setDoc(adminDocRef, { milkPriceCow: 0, milkPriceBuffalo: 0 });
                 }
             });
         }
         
         settingsForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const newCowPrice = parseFloat(cowMilkPriceInput.value);
-            const newBuffaloPrice = parseFloat(buffaloMilkPriceInput.value);
+            const priceCow = parseFloat(milkPriceCowInput.value);
+            const priceBuffalo = parseFloat(milkPriceBuffaloInput.value);
             
-            if (isNaN(newCowPrice) || newCowPrice < 0 || isNaN(newBuffaloPrice) || newBuffaloPrice < 0) {
-                showToast("validRate", true);
-                return;
-            }
             try {
-                await setDoc(settingsDocRef, { milkPriceCow: newCowPrice, milkPriceBuffalo: newBuffaloPrice });
+                await setDoc(adminDocRef, { 
+                    milkPriceCow: priceCow, 
+                    milkPriceBuffalo: priceBuffalo 
+                }, { merge: true });
                 showToast("settingsSaved");
             } catch (error) {
                 showToast(t("error") + error.message, true);
             }
         });
 
-        // ===== 9. CUSTOMERS =====
-        const addCustomerForm = document.getElementById('add-customer-form');
-        const customerList = document.getElementById('customer-list');
+        // ===== 8. CUSTOMERS =====
+        function listenToCustomers() {
+            if (!customerCollectionRef) return;
+            // ✨ FIX: Remove orderBy, add client-side sort
+            const q = query(customerCollectionRef);
+            onSnapshot(q, (snapshot) => {
+                const customers = [];
+                snapshot.forEach(doc => {
+                    customers.push({ id: doc.id, ...doc.data() });
+                });
+                // ✨ FIX: Sort in JS
+                customers.sort((a, b) => a.name.localeCompare(b.name));
+                
+                renderCustomerList(customers);
+                renderDailyLog(customers); // Update daily log page
+            });
+        }
         
         addCustomerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1570,15 +1926,22 @@
             const milkType = document.getElementById('customer-milk-type').value;
             const shift = document.getElementById('customer-shift').value;
             
-            if (!name || isNaN(defaultQty)) {
+            if (!name || isNaN(defaultQty) || defaultQty < 0) {
                 showToast("nameAndQtyRequired", true);
                 return;
             }
             
             try {
                 await addDoc(customerCollectionRef, {
-                    name, phone, address, defaultQty, milkType, shift, currentBalance: 0,
-                    createdAt: Timestamp.now()
+                    name,
+                    phone,
+                    address,
+                    defaultQty,
+                    milkType,
+                    shift,
+                    currentBalance: 0,
+                    createdAt: Timestamp.now(),
+                    adminId: currentAdminId // Add adminId
                 });
                 showToast("customerAdded");
                 addCustomerForm.reset();
@@ -1587,23 +1950,10 @@
             }
         });
 
-        function listenToCustomers() {
-            if (!customerCollectionRef) return;
-            onSnapshot(customerCollectionRef, (snapshot) => {
-                allCustomers = []; // Reset cache
-                snapshot.forEach(doc => {
-                    allCustomers.push({ id: doc.id, ...doc.data() });
-                });
-                allCustomers.sort((a, b) => a.name.localeCompare(b.name));
-                renderCustomerList(allCustomers);
-                renderDailyLog(allCustomers); 
-            });
-        }
-
         function renderCustomerList(customers) {
             customerList.innerHTML = ''; 
             if (customers.length === 0) {
-                customerList.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-gray-500 dark:text-gray-400">${t("noCustomers")}</td></tr>`;
+                customerList.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-gray-500 dark:text-gray-400">${t("noCustomersForLog")}</td></tr>`;
                 return;
             }
             
@@ -1611,12 +1961,20 @@
                 const row = document.createElement('tr');
                 row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700';
                 
-                const milkTypeDisplay = customer.milkType === 'cow' ? t('cowMilk') : t('buffaloMilk');
-                const shiftDisplay = customer.shift === 'morning' ? t('morningShift') : t('eveningShift');
-                
-                // New: Stringify customer data for history modal
-                const customerDataString = JSON.stringify(customer);
-                
+                // Handle missing fields gracefully for history button
+                const customerData = {
+                    id: customer.id,
+                    name: customer.name,
+                    phone: customer.phone || '',
+                    address: customer.address || '',
+                    defaultQty: customer.defaultQty,
+                    milkType: customer.milkType,
+                    shift: customer.shift
+                };
+                const customerDataString = JSON.stringify(customerData).replace(/'/g, "\\'");
+                const milkTypeDisplay = t(customer.milkType);
+                const shiftDisplay = t(customer.shift);
+
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap">
                         <a href="#" class="btn-history text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline" data-id="${customer.id}" data-customer-json='${customerDataString}'>${customer.name}</a>
@@ -1624,12 +1982,16 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">${milkTypeDisplay}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">${shiftDisplay}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">${customer.defaultQty} L</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold ${customer.currentBalance > 0 ? 'text-red-600 dark:text-red-400' : (customer.currentBalance < 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100')}">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold ${customer.currentBalance > 0 ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-gray-200'}">
                         ${formatCurrency(customer.currentBalance)}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                         <button data-id="${customer.id}" data-name="${customer.name}" data-balance="${customer.currentBalance}" class="btn-payment px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 dark:bg-green-800 dark:text-green-200 dark:hover:bg-green-700 transition-colors" title="${t('payment')}">
                             <i class="fas fa-receipt"></i>
+                        </button>
+                        <!-- ✨ New: Edit Customer Button -->
+                        <button data-id="${customer.id}" data-customer-json='${customerDataString}' class="btn-edit px-3 py-1 bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 dark:bg-blue-800 dark:text-blue-200 dark:hover:bg-blue-700 transition-colors" title="${t('edit')}">
+                            <i class="fas fa-edit"></i>
                         </button>
                         <button data-id="${customer.id}" class="btn-delete px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 dark:bg-red-800 dark:text-red-200 dark:hover:bg-red-700 transition-colors" title="${t('delete')}">
                             <i class="fas fa-trash-alt"></i>
@@ -1639,15 +2001,67 @@
                 customerList.appendChild(row);
             });
         }
+
+
+        // ===== 9. EVENT LISTENERS (LOGIN, LOGOUT, CUSTOMER ACTIONS) =====
         
-        customerList.addEventListener('click', async (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const target = e.target.closest('button, a');
+            authError.textContent = '';
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const remember = rememberMe.checked; // ✨ EXTRA
+
+            try {
+                // ✨ EXTRA: Set persistence
+                const persistence = remember ? browserLocalPersistence : browserSessionPersistence;
+                await setPersistence(auth, persistence);
+                
+                await signInWithEmailAndPassword(auth, email, password);
+                // On success, onAuthStateChanged will handle the UI switch
+            } catch (error) {
+                authError.textContent = t(error.code) || t("loginError");
+            }
+        });
+        
+        signupForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            authError.textContent = '';
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            
+            try {
+                await createUserWithEmailAndPassword(auth, email, password);
+                // On success, onAuthStateChanged will handle the UI switch
+            } catch (error) {
+                authError.textContent = t(error.code) || t("signupError");
+            }
+        });
+        
+        showSignupBtn.addEventListener('click', () => {
+            loginForm.classList.add('hidden');
+            signupForm.classList.remove('hidden');
+            authError.textContent = '';
+        });
+        
+        showLoginBtn.addEventListener('click', () => {
+            loginForm.classList.remove('hidden');
+            signupForm.classList.add('hidden');
+            authError.textContent = '';
+        });
+        
+        logoutBtn.addEventListener('click', async () => {
+            await signOut(auth);
+            // onAuthStateChanged will handle UI switch
+        });
+        
+        // Customer list actions (Payment, History, Delete)
+        customerList.addEventListener('click', (e) => {
+            const target = e.target.closest('button, a'); // Listen for buttons or links
             if (!target) return;
             
-            const customerId = target.dataset.id;
-            
             if (target.classList.contains('btn-delete')) {
+                const customerId = target.dataset.id;
                 // Use new confirm modal
                 showConfirmModal("confirmDeleteCustomer", "confirmDeleteCustomer", async () => {
                     try {
@@ -1660,11 +2074,15 @@
             }
             
             if (target.classList.contains('btn-payment')) {
-                const name = target.dataset.name;
-                const balance = target.dataset.balance;
-                document.getElementById('payment-customer-name').textContent = name;
-                document.getElementById('payment-customer-balance').textContent = formatCurrency(parseFloat(balance));
+                const customerId = target.dataset.id;
+                const customerName = target.dataset.name;
+                const currentBalance = parseFloat(target.dataset.balance);
+                
                 document.getElementById('payment-customer-id').value = customerId;
+                document.getElementById('payment-customer-name').textContent = customerName;
+                document.getElementById('payment-customer-balance').textContent = formatCurrency(currentBalance);
+                document.getElementById('payment-amount').value = currentBalance > 0 ? currentBalance.toFixed(2) : ''; // Pre-fill amount
+                
                 paymentModalBackdrop.classList.add('active');
                 paymentModalContent.classList.add('active');
             }
@@ -1673,16 +2091,25 @@
                 const customer = JSON.parse(target.dataset.customerJson);
                 openHistoryModal(customer);
             }
+
+            // ✨ New: Handle Edit Customer Button
+            if (target.classList.contains('btn-edit')) {
+                const customer = JSON.parse(target.dataset.customerJson);
+                openEditCustomerModal(customer);
+            }
         });
 
         // ===== 10. PAYMENT MODAL =====
-        function closePaymentModal() {
+        cancelPaymentBtn.addEventListener('click', () => {
             paymentModalBackdrop.classList.remove('active');
             paymentModalContent.classList.remove('active');
             paymentForm.reset();
-        }
-        cancelPaymentBtn.addEventListener('click', closePaymentModal);
-        paymentModalBackdrop.addEventListener('click', closePaymentModal);
+        });
+        paymentModalBackdrop.addEventListener('click', () => {
+            paymentModalBackdrop.classList.remove('active');
+            paymentModalContent.classList.remove('active');
+            paymentForm.reset();
+        });
         
         paymentForm.addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1690,38 +2117,96 @@
             const amount = parseFloat(document.getElementById('payment-amount').value);
             
             if (isNaN(amount) || amount <= 0) {
-                showToast("validAmount", true);
+                showToast("allFieldsRequired", true);
                 return;
             }
             
+            const customerDocRef = doc(customerCollectionRef, customerId);
+            const paymentLogDocRef = doc(collection(db, customerDocRef.path, 'paymentLog'));
+            
             try {
-                const customerDocRef = doc(customerCollectionRef, customerId);
-                const paymentLogCol = collection(db, customerDocRef.path, 'paymentLog');
-                
                 const batch = writeBatch(db);
                 
-                // 1. Add payment log
-                const newPaymentRef = doc(paymentLogCol);
-                batch.set(newPaymentRef, {
+                // 1. Update customer balance
+                batch.update(customerDocRef, { currentBalance: increment(-amount) });
+                
+                // 2. Add to paymentLog subcollection
+                batch.set(paymentLogDocRef, {
                     date: getTodayDateString(),
                     amount: amount,
-                    createdAt: Timestamp.now()
-                });
-                
-                // 2. Update customer balance
-                batch.update(customerDocRef, {
-                    currentBalance: increment(-amount)
+                    createdAt: Timestamp.now(),
+                    adminId: currentAdminId // Add adminId
                 });
                 
                 await batch.commit();
-                
                 showToast("paymentAdded");
-                closePaymentModal();
-                loadDashboardStats(); // Refresh dashboard payments
+                paymentModalBackdrop.classList.remove('active');
+                paymentModalContent.classList.remove('active');
+                paymentForm.reset();
             } catch (error) {
                 showToast(t("error") + error.message, true);
             }
         });
+
+        // ✨ ===== New: 10.5 EDIT CUSTOMER MODAL =====
+        function openEditCustomerModal(customer) {
+            // Pre-fill the form
+            document.getElementById('edit-customer-id').value = customer.id;
+            document.getElementById('edit-customer-name').value = customer.name;
+            document.getElementById('edit-customer-phone').value = customer.phone || '';
+            document.getElementById('edit-customer-address').value = customer.address || '';
+            document.getElementById('edit-customer-qty').value = customer.defaultQty;
+            document.getElementById('edit-customer-milk-type').value = customer.milkType;
+            document.getElementById('edit-customer-shift').value = customer.shift;
+            
+            // Show the modal
+            editCustomerModalBackdrop.classList.add('active');
+            editCustomerModalContent.classList.add('active');
+        }
+
+        function closeEditCustomerModal() {
+            editCustomerModalBackdrop.classList.remove('active');
+            editCustomerModalContent.classList.remove('active');
+            editCustomerForm.reset();
+        }
+
+        function setupEditCustomerModal() {
+            cancelEditCustomerBtn.addEventListener('click', closeEditCustomerModal);
+            editCustomerModalBackdrop.addEventListener('click', closeEditCustomerModal);
+
+            editCustomerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const customerId = document.getElementById('edit-customer-id').value;
+                const name = document.getElementById('edit-customer-name').value;
+                const phone = document.getElementById('edit-customer-phone').value;
+                const address = document.getElementById('edit-customer-address').value;
+                const defaultQty = parseFloat(document.getElementById('edit-customer-qty').value);
+                const milkType = document.getElementById('edit-customer-milk-type').value;
+                const shift = document.getElementById('edit-customer-shift').value;
+
+                if (!name || isNaN(defaultQty) || defaultQty < 0) {
+                    showToast("nameAndQtyRequired", true);
+                    return;
+                }
+
+                try {
+                    const customerDocRef = doc(customerCollectionRef, customerId);
+                    await updateDoc(customerDocRef, {
+                        name,
+                        phone,
+                        address,
+                        defaultQty,
+                        milkType,
+                        shift
+                    });
+                    showToast("customerUpdated");
+                    closeEditCustomerModal();
+                } catch (error) {
+                    showToast(t("error") + error.message, true);
+                }
+            });
+        }
 
 
         // ===== 11. DAILY LOG =====
@@ -1795,7 +2280,8 @@
                                 status: 'present',
                                 qty: qty,
                                 amount: amountToBeAdded,
-                                createdAt: Timestamp.now()
+                                createdAt: Timestamp.now(),
+                                adminId: currentAdminId // Add adminId
                             });
                         }
                     } else {
@@ -1804,7 +2290,8 @@
                             status: 'absent',
                             qty: 0,
                             amount: 0,
-                            createdAt: Timestamp.now()
+                            createdAt: Timestamp.now(),
+                            adminId: currentAdminId // Add adminId
                         });
                     }
                 });
@@ -1840,7 +2327,8 @@
             try {
                 await addDoc(expenseCollectionRef, {
                     date, description, amount,
-                    createdAt: Timestamp.now()
+                    createdAt: Timestamp.now(),
+                    adminId: currentAdminId // Add adminId
                 });
                 showToast("expenseAdded");
                 addExpenseForm.reset();
@@ -1868,11 +2356,14 @@
 
         function listenToExpenses() {
             if (!expenseCollectionRef) return;
-            onSnapshot(expenseCollectionRef, (snapshot) => {
+            // ✨ FIX: Remove orderBy, add client-side sort
+            const q = query(expenseCollectionRef);
+            onSnapshot(q, (snapshot) => {
                 const expenses = [];
                 snapshot.forEach(doc => {
                     expenses.push({ id: doc.id, ...doc.data() });
                 });
+                // Sort in JS
                 expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
                 renderExpenseList(expenses);
             });
@@ -1938,6 +2429,9 @@
         }
 
         async function handleExpenseSummary() {
+            // ✨ New: Update modal title
+            summaryModalTitle.textContent = t('geminiSummaryTitle');
+            summaryLoadingText.textContent = t('geminiLoading');
             summaryLoading.style.display = 'block';
             summaryResult.style.display = 'none';
             summaryResult.textContent = '';
@@ -1947,6 +2441,7 @@
             try {
                 const firstDayOfMonthString = getTodayDateString().substring(0, 8) + '01'; // YYYY-MM-01
                 
+                // ✨ FIX: Remove orderBy, filter in JS
                 const expenses = [];
                 const q = query(expenseCollectionRef);
                 const querySnapshot = await getDocs(q);
@@ -1985,8 +2480,69 @@
                 summaryResult.style.display = 'block';
             }
         }
+
+        // ✨ New: Gemini Income Summary
+        async function handleIncomeSummary() {
+            summaryModalTitle.textContent = t('geminiIncomeSummaryTitle');
+            summaryLoadingText.textContent = t('geminiIncomeLoading');
+            summaryLoading.style.display = 'block';
+            summaryResult.style.display = 'none';
+            summaryResult.textContent = '';
+            summaryModalBackdrop.classList.add('active');
+            summaryModalContent.classList.add('active');
+
+            try {
+                const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+                let payments = [];
+                
+                // This is complex. We must iterate over customers, then their paymentLogs
+                const customerSnapshot = await getDocs(customerCollectionRef);
+                for (const customerDoc of customerSnapshot.docs) {
+                    const paymentLogCol = collection(db, customerDoc.ref.path, 'paymentLog');
+                    // ✨ FIX: Remove orderBy
+                    const paymentQuery = query(paymentLogCol);
+                    const paymentSnapshot = await getDocs(paymentQuery);
+                    
+                    paymentSnapshot.forEach(paymentDoc => {
+                        const payment = paymentDoc.data();
+                        // Filter for this month in JS
+                        if (payment.date && new Date(payment.date) >= firstDayOfMonth) {
+                            payments.push(payment);
+                        }
+                    });
+                }
+                
+                if (payments.length === 0) {
+                    summaryResult.textContent = t("geminiNoIncome");
+                    summaryLoading.style.display = 'none';
+                    summaryResult.style.display = 'block';
+                    return;
+                }
+
+                const incomePromptData = payments.map(p => `Taarikh: ${p.date}, Raashi: ${formatCurrency(p.amount)}`).join('\n');
+                const systemPrompt = t("geminiIncomeSystemPrompt");
+                const userPrompt = t("geminiIncomeUserPrompt").replace('{data}', incomePromptData);
+
+                const payload = {
+                    contents: [{ parts: [{ text: userPrompt }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                };
+
+                const summaryText = await callGeminiApi(payload);
+                summaryResult.textContent = summaryText;
+                
+            } catch (error) {
+                console.error("Income Summary Error:", error);
+                summaryResult.textContent = t("geminiError") + error.message;
+            } finally {
+                summaryLoading.style.display = 'none';
+                summaryResult.style.display = 'block';
+            }
+        }
         
         getExpenseSummaryBtn.addEventListener('click', handleExpenseSummary);
+        getExpenseSummaryBtnDash.addEventListener('click', handleExpenseSummary);
+        getIncomeSummaryBtn.addEventListener('click', handleIncomeSummary);
         
         function closeSummaryModal() {
             summaryModalBackdrop.classList.remove('active');
@@ -2010,7 +2566,7 @@
             });
         });
 
-        function openHistoryModal(customer) { // Updated to accept full customer object
+        async function openHistoryModal(customer) { // Updated to accept full customer object
             if (milkLogUnsubscriber) milkLogUnsubscriber();
             if (paymentLogUnsubscriber) paymentLogUnsubscriber();
 
@@ -2032,18 +2588,25 @@
             const customerId = customer.id;
             // --- Load Milk History ---
             const milkLogCol = collection(db, customerCollectionRef.path, customerId, 'milkLog');
-            const milkQuery = query(milkLogCol, orderBy('createdAt', 'desc'));
+            // ✨ FIX: Remove orderBy
+            const milkQuery = query(milkLogCol);
             
             milkLogUnsubscriber = onSnapshot(milkQuery, (snapshot) => {
+                const milkHistory = [];
+                snapshot.forEach(doc => {
+                    milkHistory.push({ id: doc.id, ...doc.data() });
+                });
+                // ✨ FIX: Sort in JS
+                milkHistory.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+
                 milkHistoryList.innerHTML = '';
-                if (snapshot.empty) {
+                if (milkHistory.length === 0) {
                     noMilkHistory.style.display = 'block';
                     noMilkHistory.textContent = t('noMilkHistory');
                     return;
                 }
                 noMilkHistory.style.display = 'none';
-                snapshot.forEach(doc => {
-                    const log = doc.data();
+                milkHistory.forEach(log => {
                     const statusClass = log.status === 'present' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
                     const statusText = log.status === 'present' ? t('present') : t('absent');
                     
@@ -2056,22 +2619,32 @@
                     `;
                     milkHistoryList.appendChild(row);
                 });
+            }, (error) => {
+                 console.error("Error listening to milk history: ", error.message);
+                 milkHistoryList.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-red-500">${error.message}</td></tr>`;
             });
 
             // --- Load Payment History ---
             const paymentLogCol = collection(db, customerCollectionRef.path, customerId, 'paymentLog');
-            const paymentQuery = query(paymentLogCol, orderBy('createdAt', 'desc'));
+            // ✨ FIX: Remove orderBy
+            const paymentQuery = query(paymentLogCol);
             
             paymentLogUnsubscriber = onSnapshot(paymentQuery, (snapshot) => {
+                const paymentHistory = [];
+                snapshot.forEach(doc => {
+                    paymentHistory.push({ id: doc.id, ...doc.data() });
+                });
+                // ✨ FIX: Sort in JS
+                paymentHistory.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+
                 paymentHistoryList.innerHTML = '';
-                if (snapshot.empty) {
+                if (paymentHistory.length === 0) {
                     noPaymentHistory.style.display = 'block';
                     noPaymentHistory.textContent = t('noPaymentHistory');
                     return;
                 }
                 noPaymentHistory.style.display = 'none';
-                snapshot.forEach(doc => {
-                    const log = doc.data();
+                paymentHistory.forEach(log => {
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">${log.date}</td>
@@ -2079,6 +2652,9 @@
                     `;
                     paymentHistoryList.appendChild(row);
                 });
+            }, (error) => {
+                console.error("Error listening to payment history: ", error.message);
+                paymentHistoryList.innerHTML = `<tr><td colspan="2" class="text-center p-4 text-red-500">${error.message}</td></tr>`;
             });
         }
         
@@ -2094,6 +2670,64 @@
         
         closeHistoryBtn.addEventListener('click', closeHistoryModal);
         historyModalBackdrop.addEventListener('click', closeHistoryModal);
+
+
+        // ✨ ===== New: 14.5 CHATBOT FUNCTIONS =====
+        function setupChatbot() {
+            chatbotFabBtn.addEventListener('click', openChatModal);
+            closeChatBtn.addEventListener('click', closeChatModal);
+            chatModalBackdrop.addEventListener('click', closeChatModal);
+            
+            chatForm.addEventListener('submit', handleChatSubmit);
+        }
+
+        function openChatModal() {
+            chatModalBackdrop.classList.add('active');
+            chatModalContent.classList.add('active');
+            chatInput.focus();
+        }
+
+        function closeChatModal() {
+            chatModalBackdrop.classList.remove('active');
+            chatModalContent.classList.remove('active');
+        }
+
+        async function handleChatSubmit(e) {
+            e.preventDefault();
+            const prompt = chatInput.value.trim();
+            if (prompt === "") return;
+
+            appendChatMessage('user', prompt);
+            chatInput.value = '';
+            chatLoading.style.display = 'block';
+
+            try {
+                const systemPrompt = t("geminiChatSystemPrompt");
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] },
+                };
+
+                const responseText = await callGeminiApi(payload);
+                appendChatMessage('gemini', responseText);
+
+            } catch (error) {
+                console.error("Chatbot Error:", error);
+                appendChatMessage('gemini', t("geminiError") + error.message);
+            } finally {
+                chatLoading.style.display = 'none';
+            }
+        }
+
+        function appendChatMessage(sender, text) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message chat-message-${sender}`;
+            messageDiv.textContent = text;
+            chatHistory.appendChild(messageDiv);
+            // Scroll to bottom
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
 
         // ===== 15. FAT LOG & CHART =====
         const addFatLogForm = document.getElementById('add-fat-log-form');
@@ -2113,7 +2747,8 @@
                 await addDoc(fatLogCollectionRef, {
                     date,
                     fatValue,
-                    createdAt: Timestamp.now()
+                    createdAt: Timestamp.now(),
+                    adminId: currentAdminId // Add adminId
                 });
                 showToast("fatEntryAdded");
                 addFatLogForm.reset();
@@ -2143,18 +2778,29 @@
 
         function listenToFatLog() {
             if (!fatLogCollectionRef) return;
-            const q = query(fatLogCollectionRef, orderBy('date', 'desc'));
+            // ✨ FIX: Remove orderBy, add client-side sort
+            const q = query(fatLogCollectionRef);
             onSnapshot(q, (snapshot) => {
                 allFatData = []; // Reset cache
                 snapshot.forEach(doc => {
                     allFatData.push({ id: doc.id, ...doc.data() });
                 });
+                // ✨ FIX: Sort in JS
+                allFatData.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
                 renderFatLogList(allFatData);
                 updateDashboardFat(allFatData);
                 // Update chart with the currently selected filter
                 const activeFilter = document.querySelector('.fat-filter-btn.active');
                 const days = activeFilter ? parseInt(activeFilter.dataset.days) : 7;
                 updateFatChart(days);
+            }, (error) => {
+                // This is where the index error happens
+                console.error("Error listening to fat logs:", error);
+                if (error.code === 'failed-precondition') {
+                    console.error(`FIREBASE INDEX ERROR: The 'fatLogs' query requires an index on (adminId, date). Please create it in your Firebase console. ${error.message}`);
+                    fatLogList.innerHTML = `<tr><td colspan="3" class="text-center p-6 text-red-500 dark:text-red-300"><b>Data Error:</b> Required Firebase index is missing. See console for link.</td></tr>`;
+                }
             });
         }
 
@@ -2216,7 +2862,6 @@
             const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
             const labelColor = isDark ? '#d1d5db' : '#374151';
             const pointColor = isDark ? '#60a5fa' : '#3b82f6';
-            // ✨ FIX: Corrected variable name from 'const- -borderColor' to 'const borderColor'
             const borderColor = isDark ? '#60a5fa' : '#3b82f6';
             const bgColor = isDark ? 'rgba(96, 165, 250, 0.2)' : 'rgba(59, 130, 246, 0.1)';
 
