@@ -78,3 +78,13 @@ Data-Driven Decisions: The Fat Log chart helps monitor milk quality, while the e
 Screenshots :- 
 
 ![Project Screenshot](https://github.com/Aniketpatil2415/Dairy-management-System/blob/main/Screenshot%20(76).png?raw=true)
+
+![Screenshot 77](./Screenshot%20(77).png)
+
+![Screenshot 78](./Screenshot%20(78).png)
+
+![Screenshot 79](./Screenshot%20(79).png)
+
+![Screenshot 81](./Screenshot%20(81).png)
+
+![Screenshot 82](./Screenshot%20(82).png)
