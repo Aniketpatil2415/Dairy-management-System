@@ -397,7 +397,8 @@
                     </ul>
                 </div>
                 <!-- ✨ New: Theme Toggle -->
-                <div class="px-4 mb-3 border-t pt-4 dark:border-gray-700">
+                <!-- ✨ New: Added ID for Remote Config -->
+                <div id="theme-toggle-wrapper" class="px-4 mb-3 border-t pt-4 dark:border-gray-700">
                     <button id="theme-toggle" class="w-full flex items-center justify-center py-2 px-4 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-semibold rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
                         <i id="theme-icon-sun" class="fas fa-sun hidden mr-2 text-yellow-500"></i>
                         <i id="theme-icon-moon" class="fas fa-moon mr-2 text-yellow-500"></i>
@@ -409,8 +410,10 @@
                 <div id="language-switcher-wrapper" class="p-4 border-t dark:border-gray-700">
                     <div class="flex justify-around mb-3">
                         <button class="lang-btn" data-lang="en">English</button>
-                        <button class="lang-btn" data-lang="mr">मराठी</button>
-                    </div>
+                    <button class="lang-btn" data-lang="mr">मराठी</button>
+                </div>
+                <!-- ✨ Remote Config: Logout Button Wrapper -->
+                <div id="logout-btn-wrapper">
                     <button id="logout-btn" class="w-full flex items-center justify-center py-2 px-4 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 transition-colors">
                         <i class="fas fa-sign-out-alt mr-2"></i>
                         <span data-lang-key="logout">Logout</span>
@@ -1001,7 +1004,9 @@
             "show_gemini_summary": true,
             "app_background_color": "#f4f7f6", // Default light gray
             "app_background_image_url": "", // ✨ New: Background image URL
-            "show_gemini_chatbot": true // ✨ New: Chatbot toggle
+            "show_gemini_chatbot": true, // ✨ New: Chatbot toggle
+            "show_theme_toggle": true, // ✨ New: Theme toggle
+            "show_logout_button": true // ✨ New: Logout button toggle
         };
 
 
@@ -1599,6 +1604,8 @@
             const showLanguage = getBoolean(remoteConfig, "show_language_switcher");
             const showGemini = getBoolean(remoteConfig, "show_gemini_summary");
             const showChatbot = getBoolean(remoteConfig, "show_gemini_chatbot"); // ✨ New
+            const showThemeToggle = getBoolean(remoteConfig, "show_theme_toggle"); // ✨ New
+            const showLogoutButton = getBoolean(remoteConfig, "show_logout_button"); // ✨ New
 
             // Get string values
             const bgColor = getString(remoteConfig, "app_background_color");
@@ -1612,6 +1619,8 @@
             console.log(`- app_background_color: ${bgColor}`);
             console.log(`- app_background_image_url: ${bgImageUrl}`); // ✨ New
             console.log(`- show_gemini_chatbot: ${showChatbot}`); // ✨ New
+            console.log(`- show_theme_toggle: ${showThemeToggle}`); // ✨ New
+            console.log(`- show_logout_button: ${showLogoutButton}`); // ✨ New
 
             // Apply to UI
             document.getElementById('nav-expenses-wrapper').style.display = showExpenses ? 'block' : 'none';
@@ -1619,6 +1628,8 @@
             document.getElementById('gemini-summary-wrapper').style.display = showGemini ? 'grid' : 'none';
             document.getElementById('gemini-expense-btn-wrapper').style.display = showGemini ? 'block' : 'none';
             document.getElementById('chatbot-fab-wrapper').style.display = showChatbot ? 'block' : 'none'; // ✨ New
+            document.getElementById('theme-toggle-wrapper').style.display = showThemeToggle ? 'block' : 'none'; // ✨ New
+            document.getElementById('logout-btn-wrapper').style.display = showLogoutButton ? 'block' : 'none'; // ✨ New
 
             // ✨ New: Apply background to "Whole App" (Login View + Admin View Wrapper)
             const loginViewEl = document.getElementById('login-view');
