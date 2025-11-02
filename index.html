@@ -1,23 +1,40 @@
 <!DOCTYPE html>
-<html lang="hi">
+<!-- Added dark mode class target -->
+<html lang="hi" class=""> 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Doodh Dairy Management</title>
+    <title>Dairy Management System</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Inter Font -->
+    <!-- ✨ Change: Poppins Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- ✨ New: Tailwind Dark Mode Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class', // Enable class-based dark mode
+            theme: {
+                extend: {
+                    fontFamily: {
+                        // Set Poppins as the default
+                        sans: ['Poppins', 'sans-serif'], 
+                    }
+                }
+            }
+        }
+    </script>
+    
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            /* ✨ Change: Use Poppins font */
+            font-family: 'Poppins', sans-serif;
             background-color: #f4f7f6;
         }
         /* Page transition smoothness */
@@ -101,51 +118,134 @@
             background-color: #e5e7eb; /* bg-gray-200 */
             color: #374151; /* text-gray-700 */
         }
+        
+        /* ✨ New: Dark Mode Styles */
+        body.dark {
+            background-color: #111827; /* bg-gray-900 */
+        }
+        body.dark #login-view {
+            background-color: #111827; /* bg-gray-900 */
+        }
+        body.dark #login-view > div.shadow-xl { /* Login card */
+            background-color: #1f2937; /* bg-gray-800 */
+            border: 1px solid #374151; /* border-gray-700 */
+        }
+        body.dark #sidebar {
+            background-color: #1f2937; /* bg-gray-800 */
+            border-right: 1px solid #374151; /* border-gray-700 */
+        }
+        body.dark .nav-link {
+            color: #d1d5db; /* text-gray-300 */
+        }
+        body.dark .nav-link:hover {
+            background-color: #374151; /* bg-gray-700 */
+            color: #fff;
+        }
+        body.dark .nav-link.active {
+            background-color: #374151; /* bg-gray-700 */
+            color: #fff;
+        }
+        body.dark .md\:ml-64 { /* Main content area */
+            background-color: #111827; /* bg-gray-900 */
+        }
+        body.dark header { /* Mobile header */
+            background-color: #1f2937; /* bg-gray-800 */
+            border-bottom: 1px solid #374151; /* border-gray-700 */
+        }
+        body.dark [data-page] h1, body.dark [data-page] h2 {
+            color: #f3f4f6; /* text-gray-100 */
+        }
+        body.dark .bg-white {
+            background-color: #1f2937; /* bg-gray-800 */
+            border: 1px solid #374151; /* border-gray-700 */
+        }
+        body.dark .bg-gray-50 {
+            background-color: #374151; /* bg-gray-700 */
+        }
+        body.dark .text-gray-800 { color: #f3f4f6; /* text-gray-100 */ }
+        body.dark .text-gray-900 { color: #f9fafb; /* text-gray-50 */ }
+        body.dark .text-gray-700 { color: #d1d5db; /* text-gray-300 */ }
+        body.dark .text-gray-600 { color: #9ca3af; /* text-gray-400 */ }
+        body.dark .text-gray-500 { color: #a1a1aa; /* text-zinc-400 */ }
+        body.dark .border-gray-300 { border-color: #4b5563; /* border-gray-600 */ }
+        body.dark .border-gray-200 { border-color: #374151; /* border-gray-700 */ }
+        body.dark input, body.dark select {
+            background-color: #374151; /* bg-gray-700 */
+            color: #f3f4f6; /* text-gray-100 */
+        }
+        body.dark input::placeholder { color: #6b7280; /* text-gray-500 */ }
+        body.dark .lang-btn:not(.active) {
+            background-color: #374151; /* bg-gray-700 */
+            color: #d1d5db; /* text-gray-300 */
+        }
+        body.dark .fat-filter-btn:not(.active) {
+            background-color: #374151; /* bg-gray-700 */
+            color: #d1d5db; /* text-gray-300 */
+        }
+        body.dark .tab-btn { color: #9ca3af; /* text-gray-400 */ }
+        body.dark .tab-btn.active { color: #60a5fa; /* text-blue-400 */ border-bottom-color: #60a5fa; }
+        body.dark .prose { color: #d1d5db; }
+
+        /* Icon button dark modes */
+        body.dark .btn-payment {
+            background-color: #064e3b; /* green-800 */
+            color: #a7f3d0; /* green-200 */
+        }
+         body.dark .btn-payment:hover { background-color: #047857; /* green-700 */ }
+        body.dark .btn-delete, body.dark .btn-delete-expense, body.dark .btn-delete-fat {
+            background-color: #991b1b; /* red-800 */
+            color: #fecaca; /* red-200 */
+        }
+        body.dark .btn-delete:hover, body.dark .btn-delete-expense:hover, body.dark .btn-delete-fat:hover {
+             background-color: #b91c1c; /* red-700 */
+        }
     </style>
 </head>
 <body class="antialiased">
 
-    <!-- ===== LOGIN VIEW ===== -->
-    <div id="login-view" class="flex items-center justify-center min-h-screen bg-gray-100">
-        <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
-            <h2 class="text-3xl font-bold text-center text-gray-800" data-lang-key="adminLogin">Admin Login</h2>
-            <p class="text-center text-gray-600" data-lang-key="dairyManagementSystem">Dairy Management System</p>
+    <!-- ===== LOGIN VIEW (✨ Redesigned) ===== -->
+    <div id="login-view" class="flex flex-col items-center justify-center min-h-screen bg-gray-200 dark:bg-gray-900 p-4">
+        <div class="w-full max-w-md p-8 space-y-6 bg-white dark:bg-gray-800 rounded-xl shadow-xl">
+            <h2 class="text-3xl font-bold text-center text-gray-900 dark:text-white" data-lang-key="adminLogin">Admin Login</h2>
+            <p class="text-center text-gray-600 dark:text-gray-400" data-lang-key="dairyManagementSystem">Dairy Management System</p>
             
             <!-- Login Form -->
             <form id="login-form" class="space-y-4">
                 <div>
-                    <label for="login-email" class="text-sm font-medium text-gray-700" data-lang-key="email">Email</label>
-                    <input type="email" id="login-email" required class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" data-lang-placeholder="emailPlaceholder" placeholder="admin@email.com">
+                    <label for="login-email" class="text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="email">Email</label>
+                    <input type="email" id="login-email" required class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" data-lang-placeholder="emailPlaceholder" placeholder="admin@email.com">
                 </div>
                 <div>
-                    <label for="login-password" class="text-sm font-medium text-gray-700" data-lang-key="password">Password</label>
-                    <input type="password" id="login-password" required class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" data-lang-placeholder="passwordPlaceholder" placeholder="••••••••">
+                    <label for="login-password" class="text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="password">Password</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" data-lang-placeholder="passwordPlaceholder" placeholder="••••••••">
                 </div>
-                <button type="submit" class="w-full py-2 font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors" data-lang-key="login">Login</button>
+                <button type="submit" class="w-full py-2 font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors" data-lang-key="login">Login</button>
             </form>
             
             <div class="text-center">
-                <span class="text-sm text-gray-500" data-lang-key="newUser">Naye admin? </span>
-                <button id="show-signup-btn" class="text-sm font-medium text-blue-600 hover:underline" data-lang-key="signupHere">Signup Yahan Karein</button>
+                <span class="text-sm text-gray-500 dark:text-gray-400" data-lang-key="newUser">Naye admin? </span>
+                <button id="show-signup-btn" class="text-sm font-medium text-purple-600 dark:text-purple-400 hover:underline" data-lang-key="signupHere">Signup Yahan Karein</button>
             </div>
 
             <!-- Signup Form (Hidden initially) -->
             <form id="signup-form" class="hidden space-y-4">
-                <h3 class="text-xl font-semibold text-center text-gray-700" data-lang-key="newAdminAccount">Naya Admin Account</h3>
+                <h3 class="text-xl font-semibold text-center text-gray-800 dark:text-gray-200" data-lang-key="newAdminAccount">Naya Admin Account</h3>
                 <div>
-                    <label for="signup-email" class="text-sm font-medium text-gray-700" data-lang-key="email">Email</label>
-                    <input type="email" id="signup-email" required class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label for="signup-email" class="text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="email">Email</label>
+                    <input type="email" id="signup-email" required class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 </div>
                 <div>
-                    <label for="signup-password" class="text-sm font-medium text-gray-700" data-lang-key="password">Password</label>
-                    <input type="password" id="signup-password" required class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label for="signup-password" class="text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="password">Password</label>
+                    <input type="password" id="signup-password" required class="w-full px-4 py-2 mt-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 </div>
-                <button type="submit" class="w-full py-2 font-semibold text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors" data-lang-key="signup">Signup</button>
-                 <button type="button" id="show-login-btn" class="w-full text-sm font-medium text-blue-600 hover:underline" data-lang-key="backToLogin">Wapas Login pe Jayein</button>
+                <button type="submit" class="w-full py-2 font-semibold text-white bg-purple-600 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors" data-lang-key="signup">Signup</button>
+                 <button type="button" id="show-login-btn" class="w-full text-sm font-medium text-purple-600 dark:text-purple-400 hover:underline" data-lang-key="backToLogin">Wapas Login pe Jayein</button>
             </form>
 
             <p id="auth-error" class="text-center text-red-500 text-sm"></p>
         </div>
+        <!-- ✨ New: Credit on Login Page -->
+        <p class="text-center text-sm text-gray-600 dark:text-gray-400 mt-8">Created by Aniket</p>
     </div>
 
     <!-- ===== ADMIN APP VIEW ===== -->
@@ -153,57 +253,66 @@
         <!-- Sidebar Overlay (Mobile) -->
         <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden hidden"></div>
 
-        <div class="flex min-h-screen bg-gray-100">
+        <div class="flex min-h-screen bg-gray-100 dark:bg-gray-900">
             <!-- Sidebar Navigation -->
-            <nav id="sidebar" class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 bg-white shadow-lg transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
-                <div class="flex items-center justify-center p-6 border-b">
-                    <i class="fas fa-mug-hot text-3xl text-blue-600"></i>
-                    <span class="ml-3 text-2xl font-bold text-gray-800" data-lang-key="dairyAdmin">Dairy Admin</span>
+            <nav id="sidebar" class="fixed inset-y-0 left-0 z-30 flex flex-col w-64 bg-white dark:bg-gray-800 shadow-lg transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out">
+                <div class="flex items-center justify-center p-6 border-b dark:border-gray-700">
+                    <i class="fas fa-mug-hot text-3xl text-blue-600 dark:text-blue-400"></i>
+                    <span class="ml-3 text-2xl font-bold text-gray-800 dark:text-gray-100" data-lang-key="dairyAdmin">Dairy Admin</span>
                 </div>
                 <div class="flex-1 overflow-y-auto">
                     <ul class="py-4">
                         <!-- Navigation Links -->
                         <li class="px-6 py-3">
-                            <a href="#dashboard" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors">
+                            <a href="#dashboard" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
                                 <i class="fas fa-tachometer-alt w-6 text-center"></i>
                                 <span class="ml-3 font-medium" data-lang-key="dashboard">Dashboard</span>
                             </a>
                         </li>
                         <li class="px-6 py-3">
-                            <a href="#customers" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors">
+                            <a href="#customers" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
                                 <i class="fas fa-users w-6 text-center"></i>
                                 <span class="ml-3 font-medium" data-lang-key="customers">Grahak (Customers)</span>
                             </a>
                         </li>
                         <li class="px-6 py-3">
-                            <a href="#daily-log" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors">
+                            <a href="#daily-log" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
                                 <i class="fas fa-clipboard-list w-6 text-center"></i>
                                 <span class="ml-3 font-medium" data-lang-key="dailyLog">Roz ka Hisaab</span>
                             </a>
                         </li>
                         <!-- New Fat Log Link -->
                         <li class="px-6 py-3">
-                            <a href="#fat-log" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors">
+                            <a href="#fat-log" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
                                 <i class="fas fa-percentage w-6 text-center"></i>
                                 <span class="ml-3 font-medium" data-lang-key="fatLog">Fat Log</span>
                             </a>
                         </li>
                         <li class="px-6 py-3">
-                            <a href="#expenses" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors">
+                            <a href="#expenses" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
                                 <i class="fas fa-money-bill-wave w-6 text-center"></i>
                                 <span class="ml-3 font-medium" data-lang-key="expenses">Kharche (Expenses)</span>
                             </a>
                         </li>
                         <li class="px-6 py-3">
-                            <a href="#settings" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors">
+                            <a href="#settings" class="nav-link flex items-center text-gray-700 hover:text-blue-600 hover:bg-gray-100 rounded-md p-2 transition-colors dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-white">
                                 <i class="fas fa-cog w-6 text-center"></i>
                                 <span class="ml-3 font-medium" data-lang-key="settings">Settings</span>
                             </a>
                         </li>
                     </ul>
                 </div>
+                <!-- ✨ New: Theme Toggle -->
+                <div class="px-4 mb-3 border-t pt-4 dark:border-gray-700">
+                    <button id="theme-toggle" class="w-full flex items-center justify-center py-2 px-4 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-semibold rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+                        <i id="theme-icon-sun" class="fas fa-sun hidden mr-2 text-yellow-500"></i>
+                        <i id="theme-icon-moon" class="fas fa-moon mr-2 text-yellow-500"></i>
+                        <span id="theme-text-light" data-lang-key="switchToDark">Switch to Dark</span>
+                        <span id="theme-text-dark" data-lang-key="switchToLight" class="hidden">Switch to Light</span>
+                    </button>
+                </div>
                 <!-- Language Switcher -->
-                <div class="p-4 border-t">
+                <div class="p-4 border-t dark:border-gray-700">
                     <div class="flex justify-around mb-3">
                         <button class="lang-btn" data-lang="en">English</button>
                         <button class="lang-btn" data-lang="mr">मराठी</button>
@@ -212,18 +321,18 @@
                         <i class="fas fa-sign-out-alt mr-2"></i>
                         <span data-lang-key="logout">Logout</span>
                     </button>
-                    <p class="text-xs text-gray-500 mt-2 truncate"><span data-lang-key="adminId">Admin ID</span>: <span id="admin-user-id"></span></p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 truncate"><span data-lang-key="adminId">Admin ID</span>: <span id="admin-user-id"></span></p>
                 </div>
             </nav>
 
             <!-- Main Content Area -->
             <div class="flex-1 flex flex-col md:ml-64">
                 <!-- Mobile Header -->
-                <header class="sticky top-0 bg-white shadow-md p-4 md:hidden flex justify-between items-center z-10">
-                    <button id="menu-toggle-btn" class="text-2xl text-gray-700">
+                <header class="sticky top-0 bg-white dark:bg-gray-800 shadow-md p-4 md:hidden flex justify-between items-center z-10 dark:border-b dark:border-gray-700">
+                    <button id="menu-toggle-btn" class="text-2xl text-gray-700 dark:text-gray-300">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h1 class="text-xl font-bold text-blue-600" data-lang-key="dairyAdmin">Dairy Admin</h1>
+                    <h1 class="text-xl font-bold text-blue-600 dark:text-blue-400" data-lang-key="dairyAdmin">Dairy Admin</h1>
                     <div></div> <!-- Spacer -->
                 </header>
 
@@ -231,73 +340,73 @@
                     
                     <!-- ===== Dashboard Page ===== -->
                     <div id="dashboard-page" data-page class="active">
-                        <h1 class="text-3xl font-bold text-gray-800 mb-6" data-lang-key="dashboard">Dashboard</h1>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-6 dark:text-gray-100" data-lang-key="dashboard">Dashboard</h1>
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <!-- Stat Card 1 -->
-                            <div class="p-6 bg-white rounded-lg shadow-md">
+                            <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                                 <div class="flex items-center">
-                                    <div class="p-3 bg-blue-100 rounded-full">
-                                        <i class="fas fa-users text-2xl text-blue-600"></i>
+                                    <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-full">
+                                        <i class="fas fa-users text-2xl text-blue-600 dark:text-blue-300"></i>
                                     </div>
                                     <div class="ml-4">
-                                        <p class="text-sm font-medium text-gray-500" data-lang-key="totalCustomers">Kul Grahak</p>
-                                        <p id="stat-total-customers" class="text-3xl font-bold text-gray-900">0</p>
+                                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400" data-lang-key="totalCustomers">Kul Grahak</p>
+                                        <p id="stat-total-customers" class="text-3xl font-bold text-gray-900 dark:text-gray-50">0</p>
                                     </div>
                                 </div>
                             </div>
                             <!-- Stat Card 2 -->
-                            <div class="p-6 bg-white rounded-lg shadow-md">
+                            <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                                 <div class="flex items-center">
-                                    <div class="p-3 bg-red-100 rounded-full">
-                                        <i class="fas fa-wallet text-2xl text-red-600"></i>
+                                    <div class="p-3 bg-red-100 dark:bg-red-900 rounded-full">
+                                        <i class="fas fa-wallet text-2xl text-red-600 dark:text-red-300"></i>
                                     </div>
                                     <div class="ml-4">
-                                        <p class="text-sm font-medium text-gray-500" data-lang-key="totalBalance">Total Bakaaya</p>
-                                        <p id="stat-total-balance" class="text-3xl font-bold text-gray-900">₹0.00</p>
+                                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400" data-lang-key="totalBalance">Total Bakaaya</p>
+                                        <p id="stat-total-balance" class="text-3xl font-bold text-gray-900 dark:text-gray-50">₹0.00</p>
                                     </div>
                                 </div>
                             </div>
                             <!-- Stat Card 3 -->
-                            <div class="p-6 bg-white rounded-lg shadow-md">
+                            <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                                 <div class="flex items-center">
-                                    <div class="p-3 bg-red-100 rounded-full">
-                                        <i class="fas fa-shopping-cart text-2xl text-red-600"></i>
+                                    <div class="p-3 bg-red-100 dark:bg-red-900 rounded-full">
+                                        <i class="fas fa-shopping-cart text-2xl text-red-600 dark:text-red-300"></i>
                                     </div>
                                     <div class="ml-4">
-                                        <p class="text-sm font-medium text-gray-500" data-lang-key="monthlyExpenses">Is Mahine ka Kharcha</p>
-                                        <p id="stat-total-expenses" class="text-3xl font-bold text-gray-900">₹0.00</p>
+                                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400" data-lang-key="monthlyExpenses">Is Mahine ka Kharcha</p>
+                                        <p id="stat-total-expenses" class="text-3xl font-bold text-gray-900 dark:text-gray-50">₹0.00</p>
                                     </div>
                                 </div>
                             </div>
                              <!-- Stat Card 4 - Today's Fat -->
-                            <div class="p-6 bg-white rounded-lg shadow-md">
+                            <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                                 <div class="flex items-center">
-                                    <div class="p-3 bg-yellow-100 rounded-full">
-                                        <i class="fas fa-percentage text-2xl text-yellow-600"></i>
+                                    <div class="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-full">
+                                        <i class="fas fa-percentage text-2xl text-yellow-600 dark:text-yellow-300"></i>
                                     </div>
                                     <div class="ml-4">
-                                        <p class="text-sm font-medium text-gray-500" data-lang-key="todayFat">Today's Fat</p>
-                                        <p id="stat-today-fat" class="text-3xl font-bold text-gray-900">--</p>
+                                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400" data-lang-key="todayFat">Today's Fat</p>
+                                        <p id="stat-today-fat" class="text-3xl font-bold text-gray-900 dark:text-gray-50">--</p>
                                     </div>
                                 </div>
                             </div>
                             <!-- Stat Card 5 (New) - Monthly Payments Received -->
-                            <div class="p-6 bg-white rounded-lg shadow-md">
+                            <div class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
                                 <div class="flex items-center">
-                                    <div class="p-3 bg-green-100 rounded-full">
-                                        <i class="fas fa-hand-holding-dollar text-2xl text-green-600"></i>
+                                    <div class="p-3 bg-green-100 dark:bg-green-900 rounded-full">
+                                        <i class="fas fa-hand-holding-dollar text-2xl text-green-600 dark:text-green-300"></i>
                                     </div>
                                     <div class="ml-4">
-                                        <p class="text-sm font-medium text-gray-500" data-lang-key="monthlyPayments">Payments Received (Month)</p>
-                                        <p id="stat-total-payments" class="text-3xl font-bold text-gray-900">₹0.00</p>
+                                        <p class="text-sm font-medium text-gray-500 dark:text-gray-400" data-lang-key="monthlyPayments">Payments Received (Month)</p>
+                                        <p id="stat-total-payments" class="text-3xl font-bold text-gray-900 dark:text-gray-50">₹0.00</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- New Fat Chart -->
-                        <div class="mt-8 bg-white p-4 md:p-6 rounded-lg shadow-md">
-                            <h2 class="text-xl font-semibold mb-4" data-lang-key="fatHistory">Fat History</h2>
+                        <div class="mt-8 bg-white dark:bg-gray-800 p-4 md:p-6 rounded-lg shadow-md">
+                            <h2 class="text-xl font-semibold mb-4 dark:text-gray-100" data-lang-key="fatHistory">Fat History</h2>
                             <div class="flex justify-center flex-wrap space-x-2 mb-4">
                                 <button class="fat-filter-btn px-3 py-1 text-sm rounded-md active" data-days="7">7 Days</button>
                                 <button class="fat-filter-btn px-3 py-1 text-sm rounded-md" data-days="30">30 Days</button>
@@ -311,22 +420,22 @@
 
                     <!-- ===== Customers Page ===== -->
                     <div id="customers-page" data-page>
-                        <h1 class="text-3xl font-bold text-gray-800 mb-6" data-lang-key="manageCustomers">Grahak Manage Karein</h1>
+                        <h1 class="text-3xl font-bold text-gray-800 mb-6 dark:text-gray-100" data-lang-key="manageCustomers">Grahak Manage Karein</h1>
                         
                         <!-- Add Customer Form -->
-                        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                            <h2 class="text-xl font-semibold mb-4" data-lang-key="addNewCustomer">Naya Grahak Jodein</h2>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+                            <h2 class="text-xl font-semibold mb-4 dark:text-gray-100" data-lang-key="addNewCustomer">Naya Grahak Jodein</h2>
                             <form id="add-customer-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <input type="text" id="customer-name" class="p-2 border rounded-md" data-lang-placeholder="customerName" placeholder="Grahak ka Naam" required>
-                                <input type="tel" id="customer-phone" class="p-2 border rounded-md" data-lang-placeholder="phoneNumber" placeholder="Phone Number">
-                                <input type="text" id="customer-address" class="p-2 border rounded-md" data-lang-placeholder="address" placeholder="Address">
-                                <input type="number" step="0.5" min="0" id="customer-qty" class="p-2 border rounded-md" data-lang-placeholder="defaultMilk" placeholder="Default Doodh (Liters)" required>
+                                <input type="text" id="customer-name" class="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" data-lang-placeholder="customerName" placeholder="Grahak ka Naam" required>
+                                <input type="tel" id="customer-phone" class="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" data-lang-placeholder="phoneNumber" placeholder="Phone Number">
+                                <input type="text" id="customer-address" class="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" data-lang-placeholder="address" placeholder="Address">
+                                <input type="number" step="0.5" min="0" id="customer-qty" class="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" data-lang-placeholder="defaultMilk" placeholder="Default Doodh (Liters)" required>
                                 
-                                <select id="customer-milk-type" class="p-2 border rounded-md bg-white">
+                                <select id="customer-milk-type" class="p-2 border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600">
                                     <option value="cow" data-lang-key="cowMilk">Cow Milk</option>
                                     <option value="buffalo" data-lang-key="buffaloMilk">Buffalo Milk</option>
                                 </select>
-                                <select id="customer-shift" class="p-2 border rounded-md bg-white">
+                                <select id="customer-shift" class="p-2 border rounded-md bg-white dark:bg-gray-700 dark:border-gray-600">
                                     <option value="morning" data-lang-key="morningShift">Morning Shift</option>
                                     <option value="evening" data-lang-key="eveningShift">Evening Shift</option>
                                 </select>
@@ -336,20 +445,20 @@
                         </div>
 
                         <!-- Customer List -->
-                        <div class="bg-white rounded-lg shadow-md overflow-x-auto">
-                             <h2 class="text-xl font-semibold p-6" data-lang-key="customerList">Grahak ki List</h2>
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-x-auto">
+                             <h2 class="text-xl font-semibold p-6 dark:text-gray-100" data-lang-key="customerList">Grahak ki List</h2>
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="name">Naam</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="milkType">Milk Type</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="shift">Shift</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="defaultQty">Default Qty</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="balanceAmount">Bakaaya Raashi</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="actions">Actions</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="name">Naam</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="milkType">Milk Type</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="shift">Shift</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="defaultQty">Default Qty</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="balanceAmount">Bakaaya Raashi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="actions">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="customer-list" class="bg-white divide-y divide-gray-200">
+                                <tbody id="customer-list" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                                     <!-- Customer rows will be injected here -->
                                 </tbody>
                             </table>
@@ -359,30 +468,30 @@
                     <!-- ===== Daily Log Page ===== -->
                     <div id="daily-log-page" data-page>
                         <div class="flex flex-col md:flex-row justify-between md:items-center mb-6 gap-2">
-                            <h1 class="text-3xl font-bold text-gray-800" data-lang-key="dailyLog">Roz ka Hisaab</h1>
-                            <p class="text-lg text-gray-600"><span data-lang-key="todayDate">Aaj ki Taarikh</span>: <span id="today-date"></span></p>
+                            <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100" data-lang-key="dailyLog">Roz ka Hisaab</h1>
+                            <p class="text-lg text-gray-600 dark:text-gray-300"><span data-lang-key="todayDate">Aaj ki Taarikh</span>: <span id="today-date"></span></p>
                         </div>
 
-                        <div class="bg-white rounded-lg shadow-md mt-6 overflow-x-auto">
-                            <div class="p-4 border-b space-y-1">
-                                <p class="text-sm text-gray-600"><span data-lang-key="cowMilkRate">Cow Milk Rate</span>: <span id="log-cow-milk-price" class="font-bold text-blue-600">₹0/L</span></p>
-                                <p class="text-sm text-gray-600"><span data-lang-key="buffaloMilkRate">Buffalo Milk Rate</span>: <span id="log-buffalo-milk-price" class="font-bold text-blue-600">₹0/L</span></p>
-                                <p class="text-xs text-gray-500" data-lang-key="setFromSettings">Settings se set karein</p>
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md mt-6 overflow-x-auto">
+                            <div class="p-4 border-b dark:border-gray-700 space-y-1">
+                                <p class="text-sm text-gray-600 dark:text-gray-300"><span data-lang-key="cowMilkRate">Cow Milk Rate</span>: <span id="log-cow-milk-price" class="font-bold text-blue-600 dark:text-blue-400">₹0/L</span></p>
+                                <p class="text-sm text-gray-600 dark:text-gray-300"><span data-lang-key="buffaloMilkRate">Buffalo Milk Rate</span>: <span id="log-buffalo-milk-price" class="font-bold text-blue-600 dark:text-blue-400">₹0/L</span></p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400" data-lang-key="setFromSettings">Settings se set karein</p>
                             </div>
                             <form id="daily-log-form">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
+                                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead class="bg-gray-50 dark:bg-gray-700">
                                         <tr>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="milkDelivered">Doodh Diya?</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="customer">Grahak</th>
-                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="quantityLiters">Kitna (Liters)</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="milkDelivered">Doodh Diya?</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="customer">Grahak</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="quantityLiters">Kitna (Liters)</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="daily-log-list" class="bg-white divide-y divide-gray-200">
+                                    <tbody id="daily-log-list" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                                         <!-- Daily log rows will be injected here -->
                                     </tbody>
                                 </table>
-                                <div class="p-6 bg-gray-50 border-t">
+                                <div class="p-6 bg-gray-50 dark:bg-gray-800 border-t dark:border-gray-700">
                                     <button type="submit" class="w-full py-3 px-6 bg-green-600 text-white font-bold rounded-md hover:bg-green-700 transition-colors text-lg">
                                         <i class="fas fa-save mr-2"></i>
                                         <span data-lang-key="saveTodayLog">Aaj ka Hisaab Save Karein</span>
@@ -394,30 +503,30 @@
 
                     <!-- ===== New Fat Log Page ===== -->
                     <div id="fat-log-page" data-page>
-                        <h1 class="text-3xl font-bold text-gray-800 mb-6" data-lang-key="manageFatLog">Manage Fat Log</h1>
+                        <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6" data-lang-key="manageFatLog">Manage Fat Log</h1>
                         
                         <!-- Add Fat Entry Form -->
-                        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                            <h2 class="text-xl font-semibold mb-4" data-lang-key="addFatEntry">Add New Fat Entry</h2>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+                            <h2 class="text-xl font-semibold mb-4 dark:text-gray-100" data-lang-key="addFatEntry">Add New Fat Entry</h2>
                             <form id="add-fat-log-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <input type="date" id="fat-date" class="p-2 border rounded-md bg-gray-100" required>
-                                <input type="number" step="0.1" min="0" id="fat-value" class="p-2 border rounded-md" data-lang-placeholder="fatValuePlaceholder" placeholder="Fat Value (e.g., 8.7)" required>
+                                <input type="date" id="fat-date" class="p-2 border rounded-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600" required>
+                                <input type="number" step="0.1" min="0" id="fat-value" class="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" data-lang-placeholder="fatValuePlaceholder" placeholder="Fat Value (e.g., 8.7)" required>
                                 <button type="submit" class="md:col-span-3 w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors" data-lang-key="addEntry">Add Entry</button>
                             </form>
                         </div>
 
                         <!-- Fat Log List -->
-                        <div class="bg-white rounded-lg shadow-md overflow-x-auto">
-                            <h2 class="text-xl font-semibold p-6" data-lang-key="fatLogList">Fat Log List</h2>
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-x-auto">
+                            <h2 class="text-xl font-semibold p-6 dark:text-gray-100" data-lang-key="fatLogList">Fat Log List</h2>
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="date">Taarikh</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="fatValue">Fat Value</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="actions">Actions</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="date">Taarikh</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="fatValue">Fat Value</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="actions">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="fat-log-list" class="bg-white divide-y divide-gray-200">
+                                <tbody id="fat-log-list" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                                     <!-- Fat log rows will be injected here -->
                                 </tbody>
                             </table>
@@ -426,15 +535,15 @@
 
                     <!-- ===== Expenses Page ===== -->
                     <div id="expenses-page" data-page>
-                        <h1 class="text-3xl font-bold text-gray-800 mb-6" data-lang-key="manageExpenses">Kharche Manage Karein</h1>
+                        <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6" data-lang-key="manageExpenses">Kharche Manage Karein</h1>
                         
                         <!-- Add Expense Form -->
-                        <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-                            <h2 class="text-xl font-semibold mb-4" data-lang-key="addNewExpense">Naya Kharcha Jodein</h2>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-8">
+                            <h2 class="text-xl font-semibold mb-4 dark:text-gray-100" data-lang-key="addNewExpense">Naya Kharcha Jodein</h2>
                             <form id="add-expense-form" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <input type="date" id="expense-date" class="p-2 border rounded-md" required>
-                                <input type="text" id="expense-desc" class="p-2 border rounded-md" data-lang-placeholder="expenseDescription" placeholder="Kharcha ka Vivaran" required>
-                                <input type="number" step="0.01" min="0" id="expense-amount" class="p-2 border rounded-md" data-lang-placeholder="amount" placeholder="Raashi (₹)" required>
+                                <input type="date" id="expense-date" class="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" required>
+                                <input type="text" id="expense-desc" class="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" data-lang-placeholder="expenseDescription" placeholder="Kharcha ka Vivaran" required>
+                                <input type="number" step="0.01" min="0" id="expense-amount" class="p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" data-lang-placeholder="amountPlaceholder" placeholder="Raashi (₹)" required>
                                 <button type="submit" class="md:col-span-3 w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors" data-lang-key="addExpense">Add Kharcha</button>
                             </form>
                         </div>
@@ -446,18 +555,18 @@
                         </button>
 
                         <!-- Expense List -->
-                        <div class="bg-white rounded-lg shadow-md overflow-x-auto">
-                             <h2 class="text-xl font-semibold p-6" data-lang-key="expenseList">Kharche ki List</h2>
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-x-auto">
+                             <h2 class="text-xl font-semibold p-6 dark:text-gray-100" data-lang-key="expenseList">Kharche ki List</h2>
+                            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead class="bg-gray-50 dark:bg-gray-700">
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="date">Taarikh</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="description">Vivaran</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="amount">Raashi</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" data-lang-key="actions">Actions</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="date">Taarikh</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="description">Vivaran</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="amount">Raashi</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider" data-lang-key="actions">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody id="expense-list" class="bg-white divide-y divide-gray-200">
+                                <tbody id="expense-list" class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
                                     <!-- Expense rows will be injected here -->
                                 </tbody>
                             </table>
@@ -466,19 +575,19 @@
 
                     <!-- ===== Settings Page ===== -->
                     <div id="settings-page" data-page>
-                        <h1 class="text-3xl font-bold text-gray-800 mb-6" data-lang-key="settings">Settings</h1>
-                        <div class="bg-white p-6 rounded-lg shadow-md max-w-lg">
-                            <h2 class="text-xl font-semibold mb-4" data-lang-key="setMilkRate">Doodh ka Rate Set Karein</h2>
+                        <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6" data-lang-key="settings">Settings</h1>
+                        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md max-w-lg">
+                            <h2 class="text-xl font-semibold mb-4 dark:text-gray-100" data-lang-key="setMilkRate">Doodh ka Rate Set Karein</h2>
                             <form id="settings-form" class="space-y-4">
                                 <!-- Cow Milk Rate -->
                                 <div>
-                                    <label for="milk-price-cow" class="block text-sm font-medium text-gray-700" data-lang-key="cowMilkRate">Cow Milk Rate (per liter)</label>
-                                    <input type="number" step="0.01" min="0" id="milk-price-cow" class="mt-1 p-2 w-full border rounded-md" data-lang-placeholder="milkRateExample" placeholder="e.g., 50.50">
+                                    <label for="milk-price-cow" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="cowMilkRate">Cow Milk Rate (per liter)</label>
+                                    <input type="number" step="0.01" min="0" id="milk-price-cow" class="mt-1 p-2 w-full border rounded-md dark:bg-gray-700 dark:border-gray-600" data-lang-placeholder="milkRateExample" placeholder="e.g., 50.50">
                                 </div>
                                 <!-- Buffalo Milk Rate -->
                                 <div>
-                                    <label for="milk-price-buffalo" class="block text-sm font-medium text-gray-700" data-lang-key="buffaloMilkRate">Buffalo Milk Rate (per liter)</label>
-                                    <input type="number" step="0.01" min="0" id="milk-price-buffalo" class="mt-1 p-2 w-full border rounded-md" data-lang-placeholder="milkRateExample" placeholder="e.g., 65.00">
+                                    <label for="milk-price-buffalo" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="buffaloMilkRate">Buffalo Milk Rate (per liter)</label>
+                                    <input type="number" step="0.01" min="0" id="milk-price-buffalo" class="mt-1 p-2 w-full border rounded-md dark:bg-gray-700 dark:border-gray-600" data-lang-placeholder="milkRateExample" placeholder="e.g., 65.00">
                                 </div>
                                 <button type="submit" class="w-full py-2 px-4 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors" data-lang-key="saveSettings">
                                     Save Settings
@@ -488,24 +597,28 @@
                     </div>
 
                 </main>
+                <!-- ✨ New: Credit in Main App Footer -->
+                <footer class="text-center text-sm text-gray-500 dark:text-gray-400 py-4 mt-auto border-t border-gray-200 dark:border-gray-700">
+                    Created by Aniket
+                </footer>
             </div>
         </div>
     </div>
 
     <!-- ===== Payment Modal ===== -->
     <div id="payment-modal-backdrop" class="modal-backdrop"></div>
-    <div id="payment-modal-content" class="modal-content bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
-        <h2 class="text-xl font-semibold mb-4" data-lang-key="receivePayment">Payment Receive Karein</h2>
-        <p class="mb-2"><span data-lang-key="customer">Grahak</span>: <span id="payment-customer-name" class="font-bold"></span></p>
-        <p class="mb-4"><span data-lang-key="currentBalance">Current Bakaaya</span>: <span id="payment-customer-balance" class="font-bold"></span></p>
+    <div id="payment-modal-content" class="modal-content bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-sm">
+        <h2 class="text-xl font-semibold mb-4 dark:text-gray-100" data-lang-key="receivePayment">Payment Receive Karein</h2>
+        <p class="mb-2 dark:text-gray-300"><span data-lang-key="customer">Grahak</span>: <span id="payment-customer-name" class="font-bold"></span></p>
+        <p class="mb-4 dark:text-gray-300"><span data-lang-key="currentBalance">Current Bakaaya</span>: <span id="payment-customer-balance" class="font-bold"></span></p>
         <form id="payment-form">
             <input type="hidden" id="payment-customer-id">
             <div>
-                <label for="payment-amount" class="block text-sm font-medium text-gray-700" data-lang-key="paymentAmount">Payment Raashi (₹)</label>
-                <input type="number" step="0.01" min="0" id="payment-amount" class="mt-1 p-2 w-full border rounded-md" required>
+                <label for="payment-amount" class="block text-sm font-medium text-gray-700 dark:text-gray-300" data-lang-key="paymentAmount">Payment Raashi (₹)</label>
+                <input type="number" step="0.01" min="0" id="payment-amount" class="mt-1 p-2 w-full border rounded-md dark:bg-gray-700 dark:border-gray-600" required>
             </div>
             <div class="mt-6 flex justify-end space-x-3">
-                <button type="button" id="cancel-payment-btn" class="py-2 px-4 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors" data-lang-key="cancel">Cancel</button>
+                <button type="button" id="cancel-payment-btn" class="py-2 px-4 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 transition-colors" data-lang-key="cancel">Cancel</button>
                 <button type="submit" class="py-2 px-4 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors" data-lang-key="addPayment">Add Payment</button>
             </div>
         </form>
@@ -513,39 +626,39 @@
 
     <!-- ===== Gemini Summary Modal ===== -->
     <div id="summary-modal-backdrop" class="modal-backdrop"></div>
-    <div id="summary-modal-content" class="modal-content bg-white p-6 rounded-lg shadow-xl w-full max-w-lg">
+    <div id="summary-modal-content" class="modal-content bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-lg">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold" data-lang-key="geminiSummaryTitle">Gemini Expense Summary</h2>
-            <button id="close-summary-btn" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+            <h2 class="text-xl font-semibold dark:text-gray-100" data-lang-key="geminiSummaryTitle">Gemini Expense Summary</h2>
+            <button id="close-summary-btn" class="text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 text-2xl">&times;</button>
         </div>
         <div id="summary-loading" class="text-center p-4">
-            <i class="fas fa-spinner fa-spin text-3xl text-blue-500"></i>
-            <p class="mt-2 text-gray-600" data-lang-key="geminiLoading">Gemini se summary generate kar rahe hain...</p>
+            <i class="fas fa-spinner fa-spin text-3xl text-blue-500 dark:text-blue-400"></i>
+            <p class="mt-2 text-gray-600 dark:text-gray-300" data-lang-key="geminiLoading">Gemini se summary generate kar rahe hain...</p>
         </div>
-        <div id="summary-result" class="prose max-w-none text-gray-700" style="display: none;">
+        <div id="summary-result" class="prose max-w-none text-gray-700 dark:text-gray-200" style="display: none;">
             <!-- Gemini response will be injected here -->
         </div>
     </div>
     
     <!-- ===== Customer History Modal ===== -->
     <div id="history-modal-backdrop" class="modal-backdrop"></div>
-    <div id="history-modal-content" class="modal-content bg-white rounded-lg shadow-xl w-full max-w-3xl overflow-hidden">
+    <div id="history-modal-content" class="modal-content bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-3xl overflow-hidden">
         <!-- Modal Header -->
-        <div class="flex justify-between items-center p-5 border-b">
+        <div class="flex justify-between items-center p-5 border-b dark:border-gray-700">
             <div>
-                <h2 class="text-xl font-semibold" id="history-customer-name">Customer History</h2>
+                <h2 class="text-xl font-semibold dark:text-gray-100" id="history-customer-name">Customer History</h2>
                 <!-- Updated Info Section -->
-                <div id="history-customer-info" class="text-sm text-gray-600 mt-2">
+                <div id="history-customer-info" class="text-sm text-gray-600 dark:text-gray-300 mt-2">
                     <!-- Details will be injected here -->
                 </div>
             </div>
-            <button id="close-history-btn" class="text-gray-500 hover:text-gray-800 text-3xl">&times;</button>
+            <button id="close-history-btn" class="text-gray-500 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 text-3xl">&times;</button>
         </div>
         
         <!-- Modal Body -->
         <div class="p-5 flex flex-col">
             <!-- Tabs -->
-            <div class="border-b border-gray-200 mb-4">
+            <div class="border-b border-gray-200 dark:border-gray-700 mb-4">
                 <nav class="flex -mb-px">
                     <button class="tab-btn active" data-tab="milk-history" data-lang-key="milkHistory">Milk History</button>
                     <button class="tab-btn" data-tab="payment-history" data-lang-key="paymentHistory">Payment History</button>
@@ -556,36 +669,36 @@
             <div class="flex-1 overflow-y-auto" style="max-height: 60vh;">
                 <!-- Milk History Tab -->
                 <div id="milk-history-content" class="tab-content active">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50 sticky top-0">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase" data-lang-key="date">Date</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase" data-lang-key="status">Status</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase" data-lang-key="quantity">Quantity</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase" data-lang-key="amount">Amount</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase" data-lang-key="date">Date</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase" data-lang-key="status">Status</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase" data-lang-key="quantity">Quantity</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase" data-lang-key="amount">Amount</th>
                             </tr>
                         </thead>
-                        <tbody id="milk-history-list" class="bg-white divide-y divide-gray-200">
+                        <tbody id="milk-history-list" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             <!-- Milk history rows will be injected here -->
                         </tbody>
                     </table>
-                    <p id="no-milk-history" class="p-4 text-center text-gray-500" data-lang-key="noMilkHistory" style="display: none;"></p>
+                    <p id="no-milk-history" class="p-4 text-center text-gray-500 dark:text-gray-400" data-lang-key="noMilkHistory" style="display: none;"></p>
                 </div>
                 
                 <!-- Payment History Tab -->
                 <div id="payment-history-content" class="tab-content">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50 sticky top-0">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-700 sticky top-0">
                             <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase" data-lang-key="date">Date</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase" data-lang-key="amount">Amount Paid</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase" data-lang-key="date">Date</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase" data-lang-key="amountPaid">Amount Paid</th>
                             </tr>
                         </thead>
-                        <tbody id="payment-history-list" class="bg-white divide-y divide-gray-200">
+                        <tbody id="payment-history-list" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             <!-- Payment history rows will be injected here -->
                         </tbody>
                     </table>
-                     <p id="no-payment-history" class="p-4 text-center text-gray-500" data-lang-key="noPaymentHistory" style="display: none;"></p>
+                     <p id="no-payment-history" class="p-4 text-center text-gray-500 dark:text-gray-400" data-lang-key="noPaymentHistory" style="display: none;"></p>
                 </div>
             </div>
         </div>
@@ -593,18 +706,18 @@
 
     <!-- ===== Custom Confirm Modal (New) ===== -->
     <div id="confirm-modal-backdrop" class="modal-backdrop"></div>
-    <div id="confirm-modal-content" class="modal-content bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
-        <h2 id="confirm-modal-title" class="text-xl font-semibold mb-4">Confirm Action</h2>
-        <p id="confirm-modal-body" class="mb-6 text-gray-700">Are you sure?</p>
+    <div id="confirm-modal-content" class="modal-content bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-sm">
+        <h2 id="confirm-modal-title" class="text-xl font-semibold mb-4 dark:text-gray-100">Confirm Action</h2>
+        <p id="confirm-modal-body" class="mb-6 text-gray-700 dark:text-gray-300">Are you sure?</p>
         <div class="flex justify-end space-x-3">
-            <button type="button" id="confirm-modal-cancel" class="py-2 px-4 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition-colors" data-lang-key="cancel">Cancel</button>
+            <button type="button" id="confirm-modal-cancel" class="py-2 px-4 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500 transition-colors" data-lang-key="cancel">Cancel</button>
             <button type="button" id="confirm-modal-confirm" class="py-2 px-4 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors" data-lang-key="confirm">Confirm</button>
         </div>
     </div>
 
 
     <!-- Global Status Toast -->
-    <div id="toast-notification" class="hidden fixed bottom-5 right-5 bg-green-600 text-white py-3 px-5 rounded-lg shadow-xl transition-all duration-300 transform translate-y-10 opacity-0">
+    <div id="toast-notification" class="hidden fixed bottom-5 right-5 bg-green-600 text-white py-3 px-5 rounded-lg shadow-xl transition-all duration-300 transform translate-y-10 opacity-0 z-50">
         <p id="toast-message">Success!</p>
     </div>
 
@@ -626,7 +739,7 @@
         };
 
         // User's Gemini API Key
-        const GEMINI_API_KEY = "AIzaSyBzrprprCI-bInBXLtFCNZ5vh-14cCV0HZM";
+        const GEMINI_API_KEY = "AIzaSyBzrprprCI-bInBXLtFCNZ5vh-14cCV0HZM"; // Note: User provided a key with a dash
 
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -680,6 +793,8 @@
                 adminId: "Admin ID",
                 cancel: "Cancel",
                 confirm: "Confirm", // New
+                switchToDark: "Switch to Dark", // New
+                switchToLight: "Switch to Light", // New
                 
                 // Navigation
                 dashboard: "Dashboard",
@@ -833,6 +948,8 @@
                 adminId: "प्रशासक आयडी",
                 cancel: "रद्द करा",
                 confirm: "निश्चित करा", // New
+                switchToDark: "डार्क मोड", // New
+                switchToLight: "लाइट मोड", // New
 
                 // Navigation
                 dashboard: "डॅशबोर्ड",
@@ -1044,6 +1161,13 @@
         const confirmModalBody = document.getElementById('confirm-modal-body');
         const confirmModalCancel = document.getElementById('confirm-modal-cancel');
         const confirmModalConfirm = document.getElementById('confirm-modal-confirm');
+        
+        // ✨ New: Theme Toggle Elements
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('theme-icon-sun');
+        const moonIcon = document.getElementById('theme-icon-moon');
+        const themeTextLight = document.getElementById('theme-text-light');
+        const themeTextDark = document.getElementById('theme-text-dark');
 
 
         // ===== 3. LANGUAGE & HELPER FUNCTIONS =====
@@ -1074,6 +1198,9 @@
                     el.placeholder = translations[lang][key];
                 }
             });
+            
+            // ✨ Update theme toggle button text based on language
+            updateThemeButtonText();
 
             if (currentAdminId) {
                 // Re-render lists to apply translations
@@ -1150,6 +1277,7 @@
                 currentAdmin = user;
                 currentAdminId = user.uid;
                 
+                // THIS IS YOUR V1 DATABASE LOGIC
                 const adminDataPath = `dairyAdmins/${currentAdminId}`;
                 customerCollectionRef = collection(db, adminDataPath, 'customers');
                 expenseCollectionRef = collection(db, adminDataPath, 'expenses');
@@ -1175,7 +1303,11 @@
                 loginView.style.display = 'flex';
                 adminView.style.display = 'none';
             }
-            setLanguage(localStorage.getItem('dairyLang') || 'en');
+            // Load language on auth change (for login page too)
+            const savedLang = localStorage.getItem('dairyLang') || 'en';
+            setLanguage(savedLang);
+            // ✨ New: Apply saved theme
+            applyTheme(localStorage.getItem('dairyTheme') === 'dark');
         });
 
         loginForm.addEventListener('submit', async (e) => {
@@ -1234,8 +1366,8 @@
                 e.preventDefault();
                 const targetId = link.getAttribute('href').substring(1); 
                 
-                navLinks.forEach(nav => nav.classList.remove('bg-gray-100', 'text-blue-600'));
-                link.classList.add('bg-gray-100', 'text-blue-600');
+                navLinks.forEach(nav => nav.classList.remove('bg-gray-100', 'text-blue-600', 'dark:bg-gray-700', 'dark:text-white'));
+                link.classList.add('bg-gray-100', 'text-blue-600', 'dark:bg-gray-700', 'dark:text-white');
                 
                 pages.forEach(page => {
                     page.classList.toggle('active', page.id === `${targetId}-page`);
@@ -1253,6 +1385,48 @@
                 }
             });
         });
+        
+        // ===== 5.1 THEME TOGGLE LOGIC =====
+        function updateThemeButtonText() {
+            const isDark = document.documentElement.classList.contains('dark');
+            if (isDark) {
+                themeTextLight.classList.add('hidden');
+                themeTextDark.classList.remove('hidden');
+                themeTextDark.textContent = t('switchToLight');
+            } else {
+                themeTextLight.classList.remove('hidden');
+                themeTextDark.classList.add('hidden');
+                themeTextLight.textContent = t('switchToDark');
+            }
+        }
+
+        function applyTheme(isDark) {
+            if (isDark) {
+                document.documentElement.classList.add('dark');
+                document.body.classList.add('dark');
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.body.classList.remove('dark');
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+            updateThemeButtonText();
+            // Update chart colors if chart exists
+            if (fatChartInstance) {
+                const activeFilter = document.querySelector('.fat-filter-btn.active');
+                const days = activeFilter ? parseInt(activeFilter.dataset.days) : 7;
+                updateFatChart(days); // Redraw chart with new colors
+            }
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            const isDark = !document.documentElement.classList.contains('dark');
+            localStorage.setItem('dairyTheme', isDark ? 'dark' : 'light');
+            applyTheme(isDark);
+        });
+
 
         // ===== 6. APP INITIALIZATION =====
         function initAppLogic() {
@@ -1312,20 +1486,10 @@
             // This will only work if the user has a small number of customers.
             // For a larger app, this calculation should be done server-side.
             if (currentAdminId) {
-                const paymentLogsRef = collectionGroup(db, 'paymentLog');
-                // We query *all* payment logs for this admin's customers.
-                // This is not ideal, but it's the only way without changing DB structure.
-                // We can't filter by admin_id here, so we listen and check.
-                // A better structure would be a root `payments` collection.
-                // Given the current structure, we'll query all payment logs.
+                // This query requires a composite index on (adminId, date) for 'paymentLog'
+                // Since user's V1 used sub-collections, we must iterate.
                 
                 try {
-                    // This query is insecure and inefficient as it queries ALL paymentLogs in Firestore.
-                    // A proper implementation would require `where('adminId', '==', currentAdminId)`
-                    // but the DB structure (sub-collection) doesn't support that easily.
-                    
-                    // Let's just calculate based on customers we *know* about.
-                    // This is still N reads, but only on dashboard load.
                     let totalPayments = 0;
                     const customerSnapshot = await getDocs(customerCollectionRef);
                     for (const customerDoc of customerSnapshot.docs) {
@@ -1432,13 +1596,13 @@
         function renderCustomerList(customers) {
             customerList.innerHTML = ''; 
             if (customers.length === 0) {
-                customerList.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-gray-500">${t("noCustomers")}</td></tr>`;
+                customerList.innerHTML = `<tr><td colspan="6" class="text-center p-6 text-gray-500 dark:text-gray-400">${t("noCustomers")}</td></tr>`;
                 return;
             }
             
             customers.forEach(customer => {
                 const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
+                row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700';
                 
                 const milkTypeDisplay = customer.milkType === 'cow' ? t('cowMilk') : t('buffaloMilk');
                 const shiftDisplay = customer.shift === 'morning' ? t('morningShift') : t('eveningShift');
@@ -1448,19 +1612,19 @@
                 
                 row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <a href="#" class="btn-history text-sm font-medium text-blue-600 hover:underline" data-id="${customer.id}" data-customer-json='${customerDataString}'>${customer.name}</a>
+                        <a href="#" class="btn-history text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline" data-id="${customer.id}" data-customer-json='${customerDataString}'>${customer.name}</a>
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${milkTypeDisplay}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${shiftDisplay}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${customer.defaultQty} L</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold ${customer.currentBalance > 0 ? 'text-red-600' : (customer.currentBalance < 0 ? 'text-green-600' : 'text-gray-900')}">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">${milkTypeDisplay}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">${shiftDisplay}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">${customer.defaultQty} L</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold ${customer.currentBalance > 0 ? 'text-red-600 dark:text-red-400' : (customer.currentBalance < 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-gray-100')}">
                         ${formatCurrency(customer.currentBalance)}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                        <button data-id="${customer.id}" data-name="${customer.name}" data-balance="${customer.currentBalance}" class="btn-payment px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 transition-colors" title="${t('payment')}">
+                        <button data-id="${customer.id}" data-name="${customer.name}" data-balance="${customer.currentBalance}" class="btn-payment px-3 py-1 bg-green-100 text-green-700 rounded-md hover:bg-green-200 dark:bg-green-800 dark:text-green-200 dark:hover:bg-green-700 transition-colors" title="${t('payment')}">
                             <i class="fas fa-receipt"></i>
                         </button>
-                        <button data-id="${customer.id}" class="btn-delete px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors" title="${t('delete')}">
+                        <button data-id="${customer.id}" class="btn-delete px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 dark:bg-red-800 dark:text-red-200 dark:hover:bg-red-700 transition-colors" title="${t('delete')}">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>
@@ -1560,22 +1724,22 @@
         function renderDailyLog(customers) {
             dailyLogList.innerHTML = ''; 
             if (customers.length === 0) {
-                dailyLogList.innerHTML = `<tr><td colspan="3" class="text-center p-6 text-gray-500">${t("noCustomersForLog")}</td></tr>`;
+                dailyLogList.innerHTML = `<tr><td colspan="3" class="text-center p-6 text-gray-500 dark:text-gray-400">${t("noCustomersForLog")}</td></tr>`;
                 return;
             }
 
             customers.forEach(customer => {
                 const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
+                row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700';
                 row.innerHTML = `
                     <td class="px-6 py-4">
                         <input type="checkbox" data-id="${customer.id}" data-milk-type="${customer.milkType}" class="h-5 w-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 log-checkbox">
                     </td>
                     <td class="px-6 py-4">
-                        <label class="text-sm font-medium text-gray-900">${customer.name} (${t(customer.shift)} - ${t(customer.milkType)})</label>
+                        <label class="text-sm font-medium text-gray-900 dark:text-gray-100">${customer.name} (${t(customer.shift)} - ${t(customer.milkType)})</label>
                     </td>
                     <td class="px-6 py-4">
-                        <input type="number" step="0.5" min="0" value="${customer.defaultQty}" class="log-qty p-1 border rounded-md w-24" disabled>
+                        <input type="number" step="0.5" min="0" value="${customer.defaultQty}" class="log-qty p-1 border rounded-md w-24 dark:bg-gray-700 dark:border-gray-600" disabled>
                     </td>
                 `;
                 dailyLogList.appendChild(row);
@@ -1710,19 +1874,19 @@
         function renderExpenseList(expenses) {
             expenseList.innerHTML = ''; 
             if (expenses.length === 0) {
-                expenseList.innerHTML = `<tr><td colspan="4" class="text-center p-6 text-gray-500">${t("noExpenses")}</td></tr>`;
+                expenseList.innerHTML = `<tr><td colspan="4" class="text-center p-6 text-gray-500 dark:text-gray-400">${t("noExpenses")}</td></tr>`;
                 return;
             }
             
             expenses.forEach(expense => {
                 const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
+                row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700';
                 row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${expense.date}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${expense.description}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800">${formatCurrency(expense.amount)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">${expense.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${expense.description}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-800 dark:text-gray-200">${formatCurrency(expense.amount)}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button data-id="${expense.id}" class="btn-delete-expense px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors" title="${t('delete')}">
+                        <button data-id="${expense.id}" class="btn-delete-expense px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 dark:bg-red-800 dark:text-red-200 dark:hover:bg-red-700 transition-colors" title="${t('delete')}">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>
@@ -1851,9 +2015,9 @@
             // New: Populate customer details
             historyCustomerName.textContent = customer.name;
             historyCustomerInfo.innerHTML = `
-                <p><i class="fas fa-phone w-4"></i> ${customer.phone || 'N/A'}</p>
-                <p><i class="fas fa-map-marker-alt w-4"></i> ${customer.address || 'N/A'}</p>
-                <p class="mt-2"><strong data-lang-key="details">Details</strong>: 
+                <p class="flex items-center"><i class="fas fa-phone w-4 mr-2"></i> ${customer.phone || 'N/A'}</p>
+                <p class="flex items-center mt-1"><i class="fas fa-map-marker-alt w-4 mr-2"></i> ${customer.address || 'N/A'}</p>
+                <p class="mt-2"><strong data-lang-key="details" class="dark:text-gray-100">${t('details')}</strong>: 
                     ${customer.defaultQty}L, ${t(customer.milkType)}, ${t(customer.shift)}
                 </p>
             `;
@@ -1867,20 +2031,21 @@
                 milkHistoryList.innerHTML = '';
                 if (snapshot.empty) {
                     noMilkHistory.style.display = 'block';
+                    noMilkHistory.textContent = t('noMilkHistory');
                     return;
                 }
                 noMilkHistory.style.display = 'none';
                 snapshot.forEach(doc => {
                     const log = doc.data();
-                    const statusClass = log.status === 'present' ? 'text-green-600' : 'text-red-600';
+                    const statusClass = log.status === 'present' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
                     const statusText = log.status === 'present' ? t('present') : t('absent');
                     
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td class="px-4 py-3 text-sm text-gray-700">${log.date}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">${log.date}</td>
                         <td class="px-4 py-3 text-sm font-medium ${statusClass}">${statusText}</td>
-                        <td class="px-4 py-3 text-sm text-gray-700">${log.qty} L</td>
-                        <td class="px-4 py-3 text-sm text-gray-700">${formatCurrency(log.amount)}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">${log.qty} L</td>
+                        <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">${formatCurrency(log.amount)}</td>
                     `;
                     milkHistoryList.appendChild(row);
                 });
@@ -1894,6 +2059,7 @@
                 paymentHistoryList.innerHTML = '';
                 if (snapshot.empty) {
                     noPaymentHistory.style.display = 'block';
+                    noPaymentHistory.textContent = t('noPaymentHistory');
                     return;
                 }
                 noPaymentHistory.style.display = 'none';
@@ -1901,8 +2067,8 @@
                     const log = doc.data();
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td class="px-4 py-3 text-sm text-gray-700">${log.date}</td>
-                        <td class="px-4 py-3 text-sm font-semibold text-green-700">${formatCurrency(log.amount)}</td>
+                        <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">${log.date}</td>
+                        <td class="px-4 py-3 text-sm font-semibold text-green-700 dark:text-green-400">${formatCurrency(log.amount)}</td>
                     `;
                     paymentHistoryList.appendChild(row);
                 });
@@ -1988,17 +2154,17 @@
         function renderFatLogList(logs) {
             fatLogList.innerHTML = '';
             if (logs.length === 0) {
-                fatLogList.innerHTML = `<tr><td colspan="3" class="text-center p-6 text-gray-500">${t("noFatLog")}</td></tr>`;
+                fatLogList.innerHTML = `<tr><td colspan="3" class="text-center p-6 text-gray-500 dark:text-gray-400">${t("noFatLog")}</td></tr>`;
                 return;
             }
             logs.forEach(log => {
                 const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
+                row.className = 'hover:bg-gray-50 dark:hover:bg-gray-700';
                 row.innerHTML = `
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${log.date}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${log.fatValue.toFixed(1)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">${log.date}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${log.fatValue.toFixed(1)}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <button data-id="${log.id}" class="btn-delete-fat px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors" title="${t('delete')}">
+                        <button data-id="${log.id}" class="btn-delete-fat px-3 py-1 bg-red-100 text-red-700 rounded-md hover:bg-red-200 dark:bg-red-800 dark:text-red-200 dark:hover:bg-red-700 transition-colors" title="${t('delete')}">
                             <i class="fas fa-trash-alt"></i>
                         </button>
                     </td>
@@ -2038,6 +2204,15 @@
 
             const ctx = document.getElementById('fat-chart').getContext('2d');
             
+            // ✨ New: Dark mode colors
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)';
+            const labelColor = isDark ? '#d1d5db' : '#374151';
+            const pointColor = isDark ? '#60a5fa' : '#3b82f6';
+            // ✨ FIX: Corrected variable name from 'const- -borderColor' to 'const borderColor'
+            const borderColor = isDark ? '#60a5fa' : '#3b82f6';
+            const bgColor = isDark ? 'rgba(96, 165, 250, 0.2)' : 'rgba(59, 130, 246, 0.1)';
+
             if (fatChartInstance) {
                 fatChartInstance.destroy();
             }
@@ -2049,12 +2224,12 @@
                     datasets: [{
                         label: t('fatValue'),
                         data: data,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        borderColor: borderColor,
+                        backgroundColor: bgColor,
                         fill: true,
                         tension: 0.1,
                         borderWidth: 2,
-                        pointBackgroundColor: '#3b82f6'
+                        pointBackgroundColor: pointColor
                     }]
                 },
                 options: {
@@ -2064,18 +2239,22 @@
                         y: {
                             beginAtZero: false,
                             ticks: {
+                                color: labelColor,
                                 callback: function(value) {
                                     return value.toFixed(1) // Show one decimal place on Y-axis
                                 }
-                            }
+                            },
+                            grid: { color: gridColor }
                         },
                         x: {
                             ticks: {
+                                color: labelColor,
                                 maxRotation: 0,
                                 minRotation: 0,
                                 autoSkip: true,
                                 maxTicksLimit: 10 // Limit ticks on x-axis for readability
-                            }
+                            },
+                            grid: { color: gridColor }
                         }
                     },
                     plugins: {
@@ -2108,10 +2287,10 @@
 
 
         // ===== 16. INITIAL LOAD =====
-        const savedLang = localStorage.getItem('dairyLang') || 'en';
-        setLanguage(savedLang);
+        // Moved to authStateChanged
+        // const savedLang = localStorage.getItem('dairyLang') || 'en';
+        // setLanguage(savedLang);
 
     </script>
 </body>
 </html>
-
