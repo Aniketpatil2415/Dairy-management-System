@@ -282,7 +282,22 @@
             padding: 1rem;
             text-align: center;
         }
+        /* Notification start */
     </style>
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "3e8253d9-b3bb-4c17-9da8-5c09df9659a5",
+      safari_web_id: "web.onesignal.auto.41aef4b6-51a4-4778-92bc-f3aa3e26acde",
+      notifyButton: {
+        enable: true,
+      },
+    });
+  });
+</script>
+<!-- Notification end -->
 </head>
 <body class="antialiased">
 
@@ -397,8 +412,7 @@
                     </ul>
                 </div>
                 <!-- ✨ New: Theme Toggle -->
-                <!-- ✨ New: Added ID for Remote Config -->
-                <div id="theme-toggle-wrapper" class="px-4 mb-3 border-t pt-4 dark:border-gray-700">
+                <div class="px-4 mb-3 border-t pt-4 dark:border-gray-700">
                     <button id="theme-toggle" class="w-full flex items-center justify-center py-2 px-4 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-semibold rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
                         <i id="theme-icon-sun" class="fas fa-sun hidden mr-2 text-yellow-500"></i>
                         <i id="theme-icon-moon" class="fas fa-moon mr-2 text-yellow-500"></i>
@@ -410,10 +424,8 @@
                 <div id="language-switcher-wrapper" class="p-4 border-t dark:border-gray-700">
                     <div class="flex justify-around mb-3">
                         <button class="lang-btn" data-lang="en">English</button>
-                    <button class="lang-btn" data-lang="mr">मराठी</button>
-                </div>
-                <!-- ✨ Remote Config: Logout Button Wrapper -->
-                <div id="logout-btn-wrapper">
+                        <button class="lang-btn" data-lang="mr">मराठी</button>
+                    </div>
                     <button id="logout-btn" class="w-full flex items-center justify-center py-2 px-4 bg-red-500 text-white font-semibold rounded-md hover:bg-red-600 transition-colors">
                         <i class="fas fa-sign-out-alt mr-2"></i>
                         <span data-lang-key="logout">Logout</span>
@@ -1004,9 +1016,7 @@
             "show_gemini_summary": true,
             "app_background_color": "#f4f7f6", // Default light gray
             "app_background_image_url": "", // ✨ New: Background image URL
-            "show_gemini_chatbot": true, // ✨ New: Chatbot toggle
-            "show_theme_toggle": true, // ✨ New: Theme toggle
-            "show_logout_button": true // ✨ New: Logout button toggle
+            "show_gemini_chatbot": true // ✨ New: Chatbot toggle
         };
 
 
@@ -1604,8 +1614,6 @@
             const showLanguage = getBoolean(remoteConfig, "show_language_switcher");
             const showGemini = getBoolean(remoteConfig, "show_gemini_summary");
             const showChatbot = getBoolean(remoteConfig, "show_gemini_chatbot"); // ✨ New
-            const showThemeToggle = getBoolean(remoteConfig, "show_theme_toggle"); // ✨ New
-            const showLogoutButton = getBoolean(remoteConfig, "show_logout_button"); // ✨ New
 
             // Get string values
             const bgColor = getString(remoteConfig, "app_background_color");
@@ -1619,8 +1627,6 @@
             console.log(`- app_background_color: ${bgColor}`);
             console.log(`- app_background_image_url: ${bgImageUrl}`); // ✨ New
             console.log(`- show_gemini_chatbot: ${showChatbot}`); // ✨ New
-            console.log(`- show_theme_toggle: ${showThemeToggle}`); // ✨ New
-            console.log(`- show_logout_button: ${showLogoutButton}`); // ✨ New
 
             // Apply to UI
             document.getElementById('nav-expenses-wrapper').style.display = showExpenses ? 'block' : 'none';
@@ -1628,8 +1634,6 @@
             document.getElementById('gemini-summary-wrapper').style.display = showGemini ? 'grid' : 'none';
             document.getElementById('gemini-expense-btn-wrapper').style.display = showGemini ? 'block' : 'none';
             document.getElementById('chatbot-fab-wrapper').style.display = showChatbot ? 'block' : 'none'; // ✨ New
-            document.getElementById('theme-toggle-wrapper').style.display = showThemeToggle ? 'block' : 'none'; // ✨ New
-            document.getElementById('logout-btn-wrapper').style.display = showLogoutButton ? 'block' : 'none'; // ✨ New
 
             // ✨ New: Apply background to "Whole App" (Login View + Admin View Wrapper)
             const loginViewEl = document.getElementById('login-view');
@@ -2947,7 +2951,60 @@
                 });
             });
         }
+/* =====================================================
+STEP 1: APNA URL YAHAN PASTE KARO
+Niche di gayi line mein "https://..." ki jagah 
+apna khud ka Apps Script URL paste karo.
+=====================================================
+*/
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzI3GQKDYpYglMyaS_4Whtt8tlm1GNsTCRWrGj_lIcu0yYAgljwB-TCr8PI1mTvO6Fv/exec"; // <-- ISS LINE KO BADLO
 
+/* =====================================================
+STEP 2: BAAKI KA CODE COPY KARO
+Iske niche ke code ko copy karke paste kar do.
+Ise change karne ki zaroorat nahi hai.
+=====================================================
+*/
+
+const form = document.getElementById('contact-form');
+const message = document.getElementById('message');
+const submitButton = document.getElementById('submit-button');
+
+form.addEventListener('submit', function(e) {
+  e.preventDefault(); 
+
+  submitButton.disabled = true;
+  message.textContent = "Sending, please wait...";
+
+  const formData = {
+    name: document.getElementById('name').value,
+    email: document.getElementById('email').value
+  };
+
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify(formData),
+    headers: {
+      'Content-Type': 'text/plain', VScode
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'success') {
+      message.textContent = "Data successfully saved!";
+      form.reset(); 
+    } else {
+      message.textContent = "Error saving data.";
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    message.textContent = "An error occurred. Check console.";
+  })
+  .finally(() => {
+    submitButton.disabled = false;
+  });
+});
 
         // ===== 16. INITIAL LOAD =====
         // Moved to authStateChanged
@@ -2957,3 +3014,4 @@
     </script>
 </body>
 </html>
+
